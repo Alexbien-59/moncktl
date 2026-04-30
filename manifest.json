@@ -1,8 +1,9 @@
 {
   "name": "MonCocktail",
   "short_name": "MonCocktail",
-  "description": "Votre bar à la maison — 130 recettes de cocktails",
-  "start_url": "./index.html",
+  "description": "Votre bar à la maison — 130 recettes de cocktails classiques et créatifs",
+  "start_url": "/moncktl/index.html",
+  "scope": "/moncktl/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0C0F1D",
