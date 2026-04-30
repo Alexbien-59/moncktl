@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MonCocktail — Le bar à la maison</title>
+
+  <!-- ── PWA : Manifest & thème ── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0C0F1D">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="MonCocktail">
+
+  <!-- ── PWA : Spécifique iOS (Safari "Ajouter à l'écran d'accueil") ── -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MonCocktail">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- ── SEO & partage ── -->
+  <meta name="description" content="130 recettes de cocktails — par ingrédients, catalogue, aléatoire">
+  <meta property="og:title" content="MonCocktail">
+  <meta property="og:description" content="Votre bar à la maison — 130 recettes de cocktails">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════
+       VARIABLES DE THÈME
+       Palette sombre "bar luxueux" — modifier ici pour
+       changer l'ensemble des couleurs de l'application.
+       ══════════════════════════════════════════════════ */
+    :root {
+      /* Fonds */
+      --bg:#0C0F1D;        /* Fond de page principal */
+      --surface:#141829;   /* Fond des cartes et blocs */
+      --surface2:#1C2240;  /* Fond légèrement plus clair (inputs, survols) */
+      /* Couleurs sémantiques */
+      --accent:#D4AA4A;    /* Or : couleur principale, boutons, highlights */
+      --text:#EDE8D8;      /* Texte principal */
+      --text2:#9A92B0;     /* Texte secondaire (métadonnées, labels) */
+      --text3:#5A5472;     /* Texte tertiaire (placeholders, icônes discrètes) */
+      --border:#252B48;    /* Bordures des cartes et inputs */
+      --tag-bg:#1C2240;    /* Fond des badges de catégorie */
+      /* Couleurs de difficulté */
+      --easy:#5DB876;      /* Vert : difficulté facile */
+      --medium:#D4AA4A;    /* Or : difficulté moyenne */
+      --hard:#E05C5C;      /* Rouge : difficulté difficile */
+      /* Utilitaires */
+      --radius:14px;
+      --shadow:0 4px 28px rgba(0,0,0,0.55);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;}
+    /* TOPBAR */
+    .topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;gap:12px;height:58px;}
+    .topbar-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;white-space:nowrap;}
+    .topbar-logo span{color:var(--accent);}
+    .topbar-nav{display:flex;gap:2px;margin-left:auto;flex-wrap:nowrap;}
+    .nav-btn{padding:5px 10px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);transition:all .2s;white-space:nowrap;}
+    .nav-btn:hover,.nav-btn.active{background:var(--surface2);color:var(--text);}
+    /* PAGES */
+    .page{display:none;padding:32px 24px;max-width:1100px;margin:0 auto;}
+    .page.active{display:block;}
+    /* HERO */
+    .hero{text-align:center;padding:48px 0 40px;}
+    .hero h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);font-weight:700;line-height:1.15;margin-bottom:12px;}
+    .hero h1 em{color:var(--accent);font-style:italic;}
+    .hero p{color:var(--text2);font-size:16px;max-width:480px;margin:0 auto 36px;}
+    .hero-btns{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;}
+    .hero-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px 28px;cursor:pointer;transition:all .25s;text-align:left;min-width:180px;flex:1;max-width:260px;box-shadow:var(--shadow);}
+    .hero-card:hover{transform:translateY(-3px);box-shadow:0 8px 36px rgba(0,0,0,0.6);border-color:var(--accent);}
+    .hero-card .icon{font-size:28px;margin-bottom:10px;}
+    .hero-card h3{font-size:15px;font-weight:500;margin-bottom:5px;color:var(--text);}
+    .hero-card p{font-size:12px;color:var(--text2);}
+    /* TITRES */
+    .section-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:6px;color:var(--text);}
+    .section-sub{color:var(--text2);margin-bottom:24px;font-size:14px;}
+    /* FAMILLES */
+    .families-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:14px;margin-bottom:24px;}
+    .family-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+    .family-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+    .ingredient-chip{display:inline-flex;align-items:center;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;margin:2px;transition:all .15s;user-select:none;color:var(--text2);}
+    .ingredient-chip.selected{background:var(--accent);color:#0C0F1D;border-color:var(--accent);font-weight:500;}
+    .ingredient-chip:hover:not(.selected){border-color:var(--accent);color:var(--accent);}
+    /* ACTIONS */
+    .search-actions{display:flex;gap:10px;align-items:center;margin-bottom:24px;flex-wrap:wrap;}
+    .btn{padding:9px 20px;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;transition:all .2s;}
+    .btn-primary{background:var(--accent);color:#0C0F1D;}
+    .btn-primary:hover{background:#c99c3a;}
+    .btn-primary:disabled{background:var(--text3);cursor:not-allowed;color:var(--bg);}
+    .btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--text2);}
+    .btn-secondary:hover{background:var(--surface2);color:var(--text);}
+    .selected-count{color:var(--text2);font-size:13px;}
+    .results-count{color:var(--text2);font-size:14px;margin-bottom:14px;}
+    /* CARDS */
+    .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;}
+    .recipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .22s;box-shadow:0 2px 12px rgba(0,0,0,0.3);position:relative;}
+    .recipe-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--accent);}
+    .recipe-card-img{height:130px;display:flex;align-items:center;justify-content:center;font-size:48px;background:var(--surface2);position:relative;}
+    .recipe-card-body{padding:12px 14px 14px;}
+    .recipe-card-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:500;margin-bottom:5px;color:var(--text);}
+    .recipe-card-meta{display:flex;gap:8px;font-size:12px;color:var(--text2);margin-bottom:7px;flex-wrap:wrap;}
+    .recipe-card-tags{display:flex;flex-wrap:wrap;gap:3px;}
+    .tag{padding:2px 8px;border-radius:20px;background:var(--tag-bg);font-size:11px;color:var(--text2);}
+    .tag.diff-facile{background:#1a3527;color:var(--easy);}
+    .tag.diff-moyen{background:#332a14;color:var(--medium);}
+    .tag.diff-difficile{background:#331515;color:var(--hard);}
+    /* CATALOGUE */
+    .cat-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:24px;}
+    .cat-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;color:var(--text2);}
+    .cat-tab:hover,.cat-tab.active{background:var(--accent);color:#0C0F1D;border-color:var(--accent);font-weight:500;}
+    .cat-tab-fav{border-color:#E05C5C;color:#E05C5C;}
+    .cat-tab-fav:hover,.cat-tab-fav.active{background:#E05C5C;color:#fff;border-color:#E05C5C;}
+    .cat-mode-bar{display:flex;gap:8px;margin-bottom:14px;}
+    .cat-mode-btn{flex:1;padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;}
+    .cat-mode-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .cat-mode-btn.active{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
+    /* FICHE RECETTE */
+    #page-recipe{max-width:800px;}
+    .recipe-header{margin-bottom:24px;}
+    .recipe-hero-img{height:200px;border-radius:var(--radius);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:76px;margin-bottom:20px;}
+    .recipe-title-row{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+    .recipe-big-title{font-family:'Playfair Display',serif;font-size:clamp(20px,4vw,34px);font-weight:700;flex:1;color:var(--text);}
+    .recipe-badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;}
+    .recipe-infos{display:flex;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:18px 0;}
+    .info-block{flex:1;min-width:90px;padding:12px 16px;border-right:1px solid var(--border);text-align:center;}
+    .info-block:last-child{border-right:none;}
+    .info-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:3px;}
+    .info-val{font-size:17px;font-weight:500;color:var(--text);}
+    .info-val select{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:3px 7px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+    .recipe-body{display:grid;grid-template-columns:1fr 2fr;gap:28px;}
+    @media(max-width:600px){.recipe-body{grid-template-columns:1fr;}}
+    .recipe-section-title{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:500;margin-bottom:12px;}
+    .ingredients-list{list-style:none;}
+    .ingredients-list li{padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--text);}
+    .ingredients-list li:last-child{border-bottom:none;}
+    .ing-qty{font-weight:500;color:var(--accent);white-space:nowrap;}
+    .steps-list{list-style:none;counter-reset:step;}
+    .steps-list li{counter-increment:step;padding:0 0 18px 42px;position:relative;font-size:14px;color:var(--text);}
+    .steps-list li::before{content:counter(step);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#0C0F1D;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;}
+    /* ALÉATOIRE */
+    .random-wrap{text-align:center;padding:20px 0 32px;}
+    .random-wrap .section-title{margin-bottom:6px;}
+    .random-wrap .section-sub{margin-bottom:20px;}
+    #btn-random{font-size:16px;padding:12px 28px;margin-bottom:32px;}
+    #random-recipe-container .recipe-card{max-width:380px;margin:0 auto;cursor:default;}
+    #random-recipe-container .recipe-card:hover{transform:none;}
+    /* EMPTY */
+    .empty-state{text-align:center;padding:56px 24px;color:var(--text2);}
+    .empty-state .big{font-size:44px;margin-bottom:10px;}
+    /* BACK BTN */
+    .back-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);margin-bottom:20px;transition:all .15s;}
+    .back-btn:hover{background:var(--surface2);color:var(--text);}
+    /* SEARCH BAR */
+    .search-bar-wrap{position:relative;margin-bottom:20px;}
+    .search-bar-input{width:100%;padding:11px 78px 11px 40px;border:1px solid var(--border);border-radius:12px;background:var(--surface);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border-color .2s;}
+    .search-bar-input::placeholder{color:var(--text3);}
+    .search-bar-input:focus{border-color:var(--accent);}
+    .search-bar-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;}
+    .search-bar-clear{position:absolute;right:44px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--text3);display:none;padding:2px 5px;border-radius:6px;}
+    .search-bar-clear:hover{color:var(--text);background:var(--surface2);}
+    .search-bar-go{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;cursor:pointer;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;}
+    .search-bar-go:hover{background:#b05525;}
+    /* FAB */
+    .fab-search{position:fixed;bottom:22px;right:22px;z-index:200;padding:13px 24px;border-radius:50px;background:var(--accent);color:#0C0F1D;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;box-shadow:0 4px 20px rgba(212,170,74,0.40);display:flex;align-items:center;gap:7px;transition:opacity .25s,transform .25s,background .2s;opacity:0;pointer-events:none;transform:translateY(14px);}
+    .fab-search.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
+    .fab-search:disabled{background:var(--text3);cursor:not-allowed;color:var(--bg);}
+    .fab-search:not(:disabled):hover{background:#c99c3a;transform:translateY(-2px);}
+    /* SCROLL TOP */
+    .btn-scroll-top{position:fixed;top:66px;right:14px;z-index:200;width:36px;height:36px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text2);box-shadow:var(--shadow);transition:opacity .25s,transform .25s;opacity:0;pointer-events:none;transform:translateY(-8px);}
+    .btn-scroll-top.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
+    .btn-scroll-top:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
+    /* TIP */
+    .tip-block{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;margin-top:20px;font-size:13px;color:var(--text2);}
+    .tip-block strong{color:var(--accent);}
+    /* ============ FAVORIS ============ */
+    /* Bouton coeur sur la miniature - dans recipe-card-img (position:relative) */
+    .like-btn{position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;border-radius:50%;background:rgba(12,15,29,0.75);border:1px solid rgba(255,255,255,0.15);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;flex-shrink:0;}
+    .like-btn:hover{transform:scale(1.2);}
+    .like-btn.liked{background:rgba(224,92,92,0.25);border-color:#E05C5C;}
+    @keyframes heartpop{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}}
+    .like-btn.pop{animation:heartpop .25s ease;}
+    /* Badge compteur nav */
+    .fav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;border-radius:8px;background:#E05C5C;color:#fff;font-size:10px;font-weight:700;padding:0 4px;margin-left:3px;vertical-align:middle;}
+    .fav-badge.hidden{display:none;}
+    /* Bouton like sur la fiche recette */
+    .recipe-like-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;color:var(--text2);transition:all .2s;margin-top:14px;font-family:'DM Sans',sans-serif;}
+    .recipe-like-btn:hover{border-color:#E05C5C;color:#E05C5C;}
+    .recipe-like-btn.liked{border-color:#E05C5C;color:#E05C5C;background:rgba(224,92,92,0.12);}
+    /* ============ NOTES ============ */
+    .notes-block{margin-top:24px;}
+    .notes-block .recipe-section-title{margin-bottom:10px;}
+    .notes-textarea{width:100%;min-height:90px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:vertical;outline:none;transition:border-color .2s;line-height:1.6;}
+    .notes-textarea:focus{border-color:var(--accent);}
+    .notes-textarea::placeholder{color:var(--text3);}
+    .notes-saved{font-size:11px;color:var(--easy);margin-top:5px;opacity:0;transition:opacity .3s;}
+    .notes-saved.show{opacity:1;}
+    /* RESPONSIVE */
+    @media(max-width:700px){.topbar{padding:0 12px;}.topbar-logo{font-size:16px;}.nav-btn{padding:4px 7px;font-size:12px;}.page{padding:18px 14px;}.hero{padding:24px 0 20px;}.families-grid{grid-template-columns:1fr 1fr;}.recipe-infos{flex-direction:column;}.info-block{border-right:none;border-bottom:1px solid var(--border);}.info-block:last-child{border-bottom:none;}}
+    /* Sous 480px : logo réduit + libellés texte masqués, seuls les emojis restent */
+    @media(max-width:480px){
+      .topbar{padding:0 10px;gap:6px;}
+      .topbar-logo{font-size:17px;}
+      .topbar-nav{gap:1px;}
+      .nav-btn{padding:6px 9px;font-size:17px;}
+      .nav-btn .nav-label{display:none;}
+    }
+    /* Gère l'encoche (notch) et la barre d'accueil iPhone X+ en mode standalone */
+    .topbar {
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right));
+      padding-top: env(safe-area-inset-top);
+    }
+    .page {
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    /* ── GLASS ICONS ───────────────────────────────────── */
+    .glass-icon { color: var(--accent); display: inline-flex; align-items: center; justify-content: center; }
+    .info-glass-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .info-glass-name { font-size: 11px; color: var(--text2); white-space: nowrap; }
+    .glass-card { color: var(--text3); display: inline-flex; align-items: center; }
+
+    /* ── STAR RATING ───────────────────────────────────── */
+    .rating-section { margin-top: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; }
+    .rating-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); margin-bottom: 10px; font-weight: 500; }
+    .star-row { display: inline-flex; gap: 5px; align-items: center; }
+    .star { cursor: pointer; font-size: 26px; color: var(--text3); transition: color .12s, transform .12s; line-height: 1; user-select: none; }
+    .star.on { color: var(--accent); }
+    .star:hover { transform: scale(1.2); }
+    .rating-hint { margin-left: 10px; font-size: 12px; color: var(--text3); }
+    .stars-mini { display: inline-flex; gap: 1px; vertical-align: middle; }
+    .sm { font-size: 11px; color: var(--accent); line-height: 1; }
+    .sm.off { color: var(--text3); opacity: .35; }
+
+    /* ── DIFF FILTER BAR ───────────────────────────────── */
+    .diff-filter-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .diff-chip { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; color: var(--text2); white-space: nowrap; }
+    .diff-chip:hover { border-color: var(--text2); color: var(--text); }
+    .diff-chip.active-all { border-color: var(--accent); color: var(--accent); background: var(--surface2); }
+    .diff-chip.active-facile { border-color: var(--easy); color: var(--easy); background: #1a3527; }
+    .diff-chip.active-moyen { border-color: var(--medium); color: var(--medium); background: #332a14; }
+    .diff-chip.active-difficile { border-color: var(--hard); color: var(--hard); background: #331515; }
+
+    /* ── BOUTON LEXIQUE ────────────────────────────────── */
+    .btn-lexique {
+      position: absolute; top: 0; right: 0;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--text2); cursor: pointer; transition: all .2s;
+    }
+    .btn-lexique:hover { border-color: var(--accent); color: var(--accent); background: var(--surface2); }
+
+    /* ── PROFIL GUSTATIF ───────────────────────────────── */
+    .taste-profile { margin-top: 20px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    .taste-profile-title { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); font-weight: 500; margin-bottom: 12px; }
+    .taste-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .taste-row:last-child { margin-bottom: 0; }
+    /* white-space:nowrap empêche le label de se couper sur 2 lignes */
+    .taste-label { font-size: 12px; color: var(--text2); width: 84px; flex-shrink: 0; white-space: nowrap; }
+    .taste-bar-bg { flex: 1; height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+    .taste-bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+    .taste-bar-fill.sweet  { background: linear-gradient(90deg, #c4622d, #e8a060); }
+    .taste-bar-fill.bitter { background: linear-gradient(90deg, #4a7c59, #7ab893); }
+    .taste-bar-fill.alco   { background: linear-gradient(90deg, #4a5c9c, #7a8fd4); }
+    .taste-val { font-size: 11px; color: var(--text3); width: 58px; text-align: right; flex-shrink: 0; }
+
+    /* ── PAGE LEXIQUE ──────────────────────────────────── */
+    #page-lexique .back-btn { margin-bottom: 8px; }
+    .lex-search-wrap { position: relative; margin-bottom: 18px; }
+    .lex-search-input { width: 100%; padding: 10px 36px 10px 36px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; transition: border-color .2s; }
+    .lex-search-input:focus { border-color: var(--accent); }
+    .lex-search-ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+    .lex-search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text3); display: none; padding: 2px; }
+    .lex-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .lex-tab { flex: 1; padding: 9px 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all .18s; text-align: center; }
+    .lex-tab:hover { border-color: var(--accent); color: var(--accent); }
+    .lex-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+    .lex-list { display: flex; flex-direction: column; gap: 0; }
+    .lex-item { border-bottom: 1px solid var(--border); padding: 14px 0; cursor: pointer; }
+    .lex-item:last-child { border-bottom: none; }
+    .lex-item-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .lex-item-name { font-size: 15px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .lex-item-ico { font-size: 18px; }
+    .lex-arrow { font-size: 12px; color: var(--text3); transition: transform .2s; }
+    .lex-item.open .lex-arrow { transform: rotate(90deg); color: var(--accent); }
+    .lex-item-body { font-size: 13px; color: var(--text2); line-height: 1.65; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease; }
+    .lex-item.open .lex-item-body { max-height: 300px; padding-top: 10px; }
+    .lex-empty { text-align: center; color: var(--text3); padding: 32px 0; font-size: 14px; }
+    .lex-highlight { background: rgba(196,98,45,.22); border-radius: 3px; padding: 0 2px; }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-logo" onclick="navTo('home')">Mon<span>Cocktail</span></div>
+  <div class="topbar-nav">
+    <button class="nav-btn" onclick="navTo('search')">🍸<span class="nav-label"> Ingrédients</span></button>
+    <button class="nav-btn" onclick="navTo('catalogue')">📖<span class="nav-label"> Catalogue</span></button>
+    <button class="nav-btn" onclick="navTo('random')">🎲<span class="nav-label"> Hasard</span></button>
+  </div>
+</nav>
+<button class="fab-search" id="fab-search" onclick="doSearch()" disabled>🔍 Rechercher</button>
+<button class="btn-scroll-top" id="btn-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<div id="page-home" class="page active">
+  <div class="hero">
+    <h1>Shakers à la main,<br>votre bar <em>chez vous</em></h1>
+    <p>Composez vos cocktails avec vos ingrédients préférés, explorez le catalogue ou laissez le hasard remplir votre verre.</p>
+    <div class="hero-btns">
+      <div class="hero-card" onclick="navTo('search')"><div class="icon">🍸</div><h3>Par ingrédients</h3><p>Sélectionnez vos alcools et sirops préférés</p></div>
+      <div class="hero-card" onclick="navTo('catalogue')"><div class="icon">📖</div><h3>Catalogue</h3><p>Parcourez tous les cocktails classés</p></div>
+      <div class="hero-card" onclick="navTo('random')"><div class="icon">🎲</div><h3>Aléatoire</h3><p>Laissez le hasard remplir votre verre</p></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-search" class="page">
+  <button class="back-btn" onclick="navTo('home')">← Accueil</button>
+  <div class="section-title">Recherche par ingrédients</div>
+  <p class="section-sub">Cochez vos ingrédients préférés pour trouver le cocktail idéal</p>
+  <div class="families-grid" id="families-container"></div>
+  <div class="search-actions">
+    <button class="btn btn-primary" id="btn-search" onclick="doSearch()" disabled>Rechercher</button>
+    <button class="btn btn-secondary" onclick="resetFilters()">Réinitialiser</button>
+    <span class="selected-count" id="selected-count">Aucun ingrédient sélectionné</span>
+  </div>
+  <div id="search-results"></div>
+</div>
+
+<div id="page-catalogue" class="page">
+  <button class="back-btn" onclick="navTo('home')">← Accueil</button>
+  <div class="section-title">Catalogue</div>
+  <p class="section-sub">Explorez toute la carte, filtrez par type, alcool ou difficulté</p>
+  <div class="search-bar-wrap">
+    <span class="search-bar-icon">🔍</span>
+    <input class="search-bar-input" id="cat-search-input" type="text" placeholder="Rechercher un cocktail..." oninput="onCatSearch(this.value)" onkeydown="if(event.key==='Enter')execCatSearch()" autocomplete="off">
+    <button class="search-bar-clear" id="cat-search-clear" onclick="clearCatSearch()" title="Vider">✕</button>
+    <button class="search-bar-go" onclick="execCatSearch()" title="Rechercher">→</button>
+  </div>
+  <div class="cat-mode-bar">
+    <button class="cat-mode-btn active" id="mode-btn-cat" onclick="setCatMode('cat')">🍸 Type</button>
+    <button class="cat-mode-btn" id="mode-btn-base" onclick="setCatMode('base')">🥃 Alcool de base</button>
+  </div>
+  <div class="diff-filter-bar" id="diff-filter-bar">
+    <button class="diff-chip active-all" onclick="setDiffFilter('all',this)">Toutes</button>
+    <button class="diff-chip" onclick="setDiffFilter('facile',this)">🟢 Facile</button>
+    <button class="diff-chip" onclick="setDiffFilter('moyen',this)">🟡 Moyen</button>
+    <button class="diff-chip" onclick="setDiffFilter('difficile',this)">🔴 Difficile</button>
+  </div>
+  <div id="cat-tabs"></div>
+  <div id="catalogue-results"></div>
+</div>
+
+<div id="page-random" class="page">
+  <button class="back-btn" onclick="navTo('home')">← Accueil</button>
+  <div class="random-wrap">
+    <div class="section-title">Cocktail aléatoire</div>
+    <p class="section-sub">Pas d'inspiration ? Laissez le sort choisir pour vous</p>
+    <button class="btn btn-primary" id="btn-random" onclick="pickRandom()">🎲 Nouveau cocktail</button>
+  </div>
+  <div id="random-recipe-container"></div>
+</div>
+
+<div id="page-recipe" class="page">
+  <div style="position:relative; min-height:34px; margin-bottom:4px; display:flex; align-items:center;">
+    <button class="back-btn" id="recipe-back-btn" onclick="goBack()" style="position:static; margin:0;">← Retour</button>
+    <button class="btn-lexique" onclick="openLexique()">💡 Lexique</button>
+  </div>
+  <div id="recipe-content"></div>
+</div>
+
+<div id="page-lexique" class="page">
+  <div style="position:relative; min-height:34px; margin-bottom:12px; display:flex; align-items:center;">
+    <button class="back-btn" onclick="goBack()" style="position:static; margin:0;">← Retour à la recette</button>
+  </div>
+  <div class="section-title" style="margin-bottom:4px">Lexique</div>
+  <p style="color:var(--text2);font-size:14px;margin-bottom:18px">Techniques, alcools, matériel — tout ce qu'il faut savoir.</p>
+  <div class="lex-search-wrap">
+    <span class="lex-search-ico">🔍</span>
+    <input class="lex-search-input" id="lex-search" type="text" placeholder="Rechercher dans le lexique..." oninput="filterLexique(this.value)" autocomplete="off">
+    <button class="lex-search-clear" id="lex-clear" onclick="clearLexique()">✕</button>
+  </div>
+  <div class="lex-tabs">
+    <button class="lex-tab active" id="lt-techniques" onclick="setLexTab('techniques',this)">🧪 Techniques</button>
+    <button class="lex-tab" id="lt-alcools" onclick="setLexTab('alcools',this)">🍶 Alcools</button>
+    <button class="lex-tab" id="lt-materiel" onclick="setLexTab('materiel',this)">🔧 Matériel</button>
+  </div>
+  <div class="lex-list" id="lex-list"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   MonCocktail — JavaScript principal
+   ────────────────────────────────────────────────────────────────────────────
+   Organisation du code :
+     1. Helpers localStorage
+     2. Favoris (FAVORITES, toggleFav, refreshFavUI)
+     3. Notes personnelles (getNote, saveNote)
+     4. Navigation (navTo, goBack, showPage, History API)
+     5. Page Ingrédients (loadIngredientFamilies, doSearch)
+     6. Page Catalogue (loadCatalogueTabs, filterCatalogue, renderCatalogueGrid)
+     7. Page Aléatoire (pickRandom)
+     8. Fiche recette (showRecipe, updateQuantities)
+     9. Recherche catalogue (onCatSearch, execCatSearch, clearCatSearch)
+    10. Filtre difficulté (setDiffFilter)
+    11. SVG verres (G, glassKey, glassIcon)
+    12. Notation étoiles (RATINGS, setRating, buildStarsHtml, miniStarsHtml)
+    13. Profil gustatif (PROFILES, buildTasteProfile)
+    14. Lexique (LEXIQUE, openLexique, setLexTab, renderLexique, toggleLexItem)
+    15. Données statiques (FAMILIES, COCKTAILS)
+    16. Initialisation (window.onload)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+// ── 1. HELPERS localStorage ───────────────────────────────────────────────
+// Wrappers sécurisés : les navigateurs en mode privé peuvent bloquer
+// localStorage sans lever d'erreur visible — le try/catch évite les crashes.
+function lsGet(key, def) {
+  try { var v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
+  catch(e) { return def; }
+}
+function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+
+// ── 2. FAVORIS ────────────────────────────────────────────────────────────
+// FAVORITES est un simple tableau d'IDs numériques persisté en localStorage.
+// On le charge une fois au démarrage et on le maintient en mémoire.
+var FAVORITES = lsGet('mc_favs', []);
+
+function isFav(id) { return FAVORITES.indexOf(id) !== -1; }
+
+function toggleFav(id) {
+  var idx = FAVORITES.indexOf(id);
+  if (idx === -1) { FAVORITES.push(id); } else { FAVORITES.splice(idx, 1); }
+  lsSet('mc_favs', FAVORITES);
+  refreshFavUI(id); // Mettre à jour tous les boutons cœur affichés
+}
+
+// Synchronise TOUS les éléments visuels liés à cet id sans recharger la page.
+// Nécessaire car le même cocktail peut avoir un bouton dans la grille ET dans la fiche.
+function refreshFavUI(id) {
+  var faved = isFav(id);
+
+  // Boutons .like-btn dans les cartes de la grille catalogue/résultats
+  var btns = document.querySelectorAll('.like-btn[data-fav="' + id + '"]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].textContent = faved ? '❤️' : '🤍';
+    btns[i].classList.toggle('liked', faved);
+  }
+
+  // Bouton like sur la fiche recette (si cette fiche est actuellement ouverte)
+  var rlBtn = document.getElementById('recipe-like-btn');
+  if (rlBtn && parseInt(rlBtn.getAttribute('data-id'), 10) === id) {
+    rlBtn.classList.toggle('liked', faved);
+    var ico = rlBtn.querySelector('.rl-ico');
+    var txt = rlBtn.querySelector('.rl-txt');
+    if (ico) ico.textContent = faved ? '❤️' : '🤍';
+    if (txt) txt.textContent = faved ? 'Retirer des favoris' : 'Ajouter aux favoris';
+  }
+
+  // Si le catalogue est visible, mettre à jour le compteur de l'onglet favoris
+  var pCat = document.getElementById('page-catalogue');
+  if (pCat && pCat.classList.contains('active')) {
+    var favTab = document.querySelector('.cat-tab-fav');
+    if (favTab) {
+      var fc = FAVORITES.length;
+      favTab.textContent = fc > 0 ? '❤️ Favoris (' + fc + ')' : '❤️ Favoris';
+      // Si l'onglet Favoris est l'onglet actif, rafraîchir la grille en temps réel
+      if (favTab.classList.contains('active')) {
+        var favCocktails = COCKTAILS.filter(function(c) { return isFav(c.id); });
+        if (favCocktails.length === 0) {
+          document.getElementById('catalogue-results').innerHTML = '<div class="empty-state"><div class="big">🤍</div><p>Aucun favori pour l&#39;instant.</p></div>';
+        } else {
+          renderCatalogueGrid(favCocktails);
+        }
+      }
+    }
+  }
+}
+
+// Gestionnaire du clic sur le bouton cœur dans les cartes.
+// stopPropagation() empêche le clic de remonter jusqu'à la carte et d'ouvrir la fiche.
+function onLikeCard(e, id) {
+  e.stopPropagation();
+  toggleFav(id);
+  // Animation "pop" CSS déclenchée en retirant puis rajoutant la classe
+  var btn = e.currentTarget;
+  btn.classList.remove('pop');
+  void btn.offsetWidth; // Force un reflow pour que l'animation reparte depuis zéro
+  btn.classList.add('pop');
+}
+
+// Génère le HTML du bouton cœur inséré dans chaque card-img
+function heartBtn(id) {
+  return '<button class="like-btn' + (isFav(id) ? ' liked' : '') + '" data-fav="' + id + '" onclick="onLikeCard(event,' + id + ')" title="Favori">' + (isFav(id) ? '❤️' : '🤍') + '</button>';
+}
+
+// Page favoris standalone (accessible depuis la topbar)
+function loadFavoritesPage() {
+  var container = document.getElementById('fav-results');
+  if (!container) return;
+  var favCocktails = COCKTAILS.filter(function(c) { return isFav(c.id); });
+  if (favCocktails.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:70px 0;color:var(--text2)"><div style="font-size:48px;margin-bottom:14px">🤍</div><p>Aucun favori pour l&#39;instant.<br>Cliquez sur &#x1F90D; sur n&#39;importe quel cocktail&nbsp;!</p></div>';
+    return;
+  }
+  var html = '<div class="results-grid">';
+  favCocktails.forEach(function(c) {
+    html += '<div class="recipe-card" onclick="showRecipe(' + c.id + ')">'
+      + '<div class="recipe-card-img">' + c.emoji + heartBtn(c.id) + '</div>'
+      + '<div class="recipe-card-body">'
+      + '<div class="recipe-card-title">' + c.title + '</div>'
+      + '<div class="recipe-card-meta"><span>🕒 ' + c.prep + ' min</span><span>🥃 ' + c.baseAlcool + '</span></div>'
+      + '<div class="recipe-card-tags"><span class="tag diff-' + c.diff + '">' + c.diff + '</span><span class="tag">' + c.cat + '</span></div>'
+      + '</div></div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── 3. NOTES PERSONNELLES ─────────────────────────────────────────────────
+// Chaque recette a sa propre clé : mc_note_<id>.
+// Stocker séparément (plutôt qu'un objet global) évite de tout réécrire à chaque saisie.
+function getNote(id) { return lsGet('mc_note_' + id, ''); }
+function saveNote(id, txt) {
+  lsSet('mc_note_' + id, txt);
+  // Affiche l'indicateur "sauvegardé" 1,8 secondes puis disparaît
+  var saved = document.getElementById('notes-saved-' + id);
+  if (saved) {
+    saved.classList.add('show');
+    clearTimeout(saved._t);
+    saved._t = setTimeout(function() { saved.classList.remove('show'); }, 1800);
+  }
+}
+
+// ── 4. NAVIGATION ─────────────────────────────────────────────────────────
+// Système maison basé sur History API pour que le bouton retour natif
+// du navigateur (et du mobile) fonctionne correctement.
+var pageHistory = ['home']; // Pile des pages visitées
+
+function navTo(pageId) {
+  showPage(pageId);
+  pageHistory.push(pageId);
+  history.pushState({ page: pageId }, '', ''); // Crée une entrée dans l'historique navigateur
+}
+
+function goBack() {
+  pageHistory.pop(); // Retire la page courante
+  var prev = pageHistory.length > 0 ? pageHistory[pageHistory.length - 1] : 'home';
+  showPage(prev);
+  // Pas de pushState ici pour éviter de créer une boucle infinie avec popstate
+}
+
+// Intercepte le bouton retour natif du navigateur / mobile
+window.addEventListener('popstate', function(e) {
+  pageHistory.pop();
+  var prev = pageHistory.length > 0 ? pageHistory[pageHistory.length - 1] : 'home';
+  showPage(prev);
+  history.pushState({ page: prev }, '', ''); // Réenregistre pour les prochains retours
+});
+
+// Affiche une page en masquant toutes les autres.
+// Gère aussi le FAB de recherche (visible uniquement sur la page ingrédients).
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  var target = document.getElementById('page-' + pageId);
+  if (!target) return;
+  target.classList.add('active');
+  document.getElementById('fab-search').classList.toggle('visible', pageId === 'search');
+  window.scrollTo(0, 0); // Remonte en haut à chaque changement de page
+  // Chargement différé : les données ne sont générées qu'au premier affichage
+  if (pageId === 'search')   loadIngredientFamilies();
+  if (pageId === 'catalogue') loadCatalogueTabs();
+  if (pageId === 'random')   pickRandom();
+  if (pageId === 'lexique')  renderLexique();
+}
+
+function goHome() { navTo('home'); }
+
+// ── 5. PAGE INGRÉDIENTS ───────────────────────────────────────────────────
+// Les familles d'ingrédients sont construites une seule fois (data-loaded guard)
+// pour éviter de refabriquer le DOM à chaque visite de la page.
+function loadIngredientFamilies() {
+  var container = document.getElementById('families-container');
+  if (container.dataset.loaded) return; // Guard : ne construire qu'une fois
+  container.dataset.loaded = '1';
+  var html = '';
+  FAMILIES.forEach(function(family) {
+    html += '<div class="family-block"><div class="family-label"><span>' + family.icon + '</span> ' + family.label + '</div><div class="ingredient-chips">';
+    family.items.forEach(function(item) {
+      html += '<span class="ingredient-chip" data-item="' + item.replace(/"/g, '&quot;') + '">' + item + '</span>';
+    });
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
+  // Délégation d'événement sur le conteneur pour éviter N listeners individuels
+  container.addEventListener('click', function(e) {
+    var chip = e.target.closest('.ingredient-chip');
+    if (!chip) return;
+    chip.classList.toggle('selected');
+    updateSearchButton();
+  });
+}
+
+// Met à jour le bouton Rechercher et le FAB selon la sélection d'ingrédients
+function updateSearchButton() {
+  var selected = document.querySelectorAll('.ingredient-chip.selected');
+  var has = selected.length > 0;
+  document.getElementById('btn-search').disabled = !has;
+  document.getElementById('fab-search').disabled = !has;
+  document.getElementById('selected-count').textContent = has
+    ? selected.length + ' ingrédient' + (selected.length > 1 ? 's' : '') + ' sélectionné' + (selected.length > 1 ? 's' : '')
+    : 'Aucun ingrédient sélectionné';
+}
+
+// Remet à zéro toutes les sélections d'ingrédients
+function resetFilters() {
+  document.querySelectorAll('.ingredient-chip.selected').forEach(function(c) { c.classList.remove('selected'); });
+  updateSearchButton();
+}
+
+// ── Utilitaire : mélange aléatoire Fisher-Yates ───────────────────────────
+// Retourne une COPIE mélangée du tableau (l'original n'est pas modifié).
+function shuffle(arr) {
+  var a = arr.slice(); // copie pour ne pas muter l'original
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+// ── 5b. RECHERCHE PAR INGRÉDIENTS ─────────────────────────────────────────
+// Algorithme : score = nb d'ingrédients sélectionnés présents dans c.tags.
+// Les résultats sont groupés par score décroissant, puis mélangés aléatoirement
+// au sein de chaque groupe pour éviter un ordre fixe par ID.
+function doSearch() {
+  var selected = Array.from(document.querySelectorAll('.ingredient-chip.selected')).map(function(c) { return c.dataset.item || c.textContent.trim(); });
+  var total = selected.length;
+  var container = document.getElementById('search-results');
+
+  // Calculer le score de chaque cocktail
+  var scored = COCKTAILS.map(function(c) {
+    var mc = selected.filter(function(ing) { return c.tags.indexOf(ing) !== -1; }).length;
+    return { c: c, mc: mc };
+  }).filter(function(x) { return x.mc > 0; }); // Exclure les zéros
+
+  if (scored.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="big">🍹</div><p>Aucun cocktail trouvé.<br>Essayez d&#39;autres ingrédients&nbsp;!</p></div>';
+    return;
+  }
+
+  // Trier par score décroissant, aléatoire à l'intérieur de chaque groupe de score égal
+  var maxScore = Math.max.apply(null, scored.map(function(x) { return x.mc; }));
+  var sorted = [];
+  for (var s = maxScore; s >= 1; s--) {
+    sorted = sorted.concat(shuffle(scored.filter(function(x) { return x.mc === s; })));
+  }
+
+  var html = '<div class="results-count">' + sorted.length + ' cocktail' + (sorted.length > 1 ? 's' : '') + ' trouvé' + (sorted.length > 1 ? 's' : '') + '</div><div class="results-grid">';
+  sorted.forEach(function(x) {
+    var c = x.c;
+    var mc = x.mc;
+    // Affiche le ratio de correspondance seulement si plusieurs ingrédients sélectionnés
+    var matchLabel = total > 1 ? '<span style="color:var(--accent);font-weight:600">✓ ' + mc + '/' + total + '</span>' : '';
+    html += '<div class="recipe-card" onclick="showRecipe(' + c.id + ')">'
+      + '<div class="recipe-card-img">' + c.emoji + heartBtn(c.id) + '</div>'
+      + '<div class="recipe-card-body"><div class="recipe-card-title">' + c.title + '</div>'
+      + '<div class="recipe-card-meta"><span>🕒 ' + c.prep + ' min</span><span>🥃 ' + c.baseAlcool + '</span>' + matchLabel + '</div>'
+      + '<div class="recipe-card-tags"><span class="tag diff-' + c.diff + '">' + c.diff + '</span><span class="tag">' + c.cat + '</span></div>'
+      + '</div></div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── 6. CATALOGUE ──────────────────────────────────────────────────────────
+// catMode : 'cat' = filtrage par type de cocktail, 'base' = par alcool de base
+var catMode = 'cat';
+
+// Bascule entre les deux modes de filtrage et recharge les onglets
+function setCatMode(mode) {
+  catMode = mode;
+  document.getElementById('mode-btn-cat').classList.toggle('active', mode === 'cat');
+  document.getElementById('mode-btn-base').classList.toggle('active', mode === 'base');
+  loadCatalogueTabs();
+}
+
+// Construit dynamiquement les onglets de catégorie depuis les données COCKTAILS.
+// Utilise la délégation d'événement sur le conteneur (un seul listener pour tous les onglets).
+function loadCatalogueTabs() {
+  var field = catMode === 'cat' ? 'cat' : 'baseAlcool';
+  var uniqueVals = [];
+  COCKTAILS.forEach(function(r) { if (uniqueVals.indexOf(r[field]) === -1) uniqueVals.push(r[field]); });
+  uniqueVals.sort(); // Ordre alphabétique
+  var tabsContainer = document.getElementById('cat-tabs');
+  var favCount = FAVORITES.length;
+  var html = '<div class="cat-tab active" data-val="all">Tous (' + COCKTAILS.length + ')</div>';
+  html += '<div class="cat-tab cat-tab-fav" data-val="__favs__">❤️ Favoris' + (favCount > 0 ? ' (' + favCount + ')' : '') + '</div>';
+  uniqueVals.forEach(function(v) {
+    var count = COCKTAILS.filter(function(r) { return r[field] === v; }).length;
+    html += '<div class="cat-tab" data-val="' + v + '">' + v + ' (' + count + ')</div>';
+  });
+  tabsContainer.innerHTML = html;
+  // Un seul listener délégué sur le conteneur pour tous les onglets
+  tabsContainer.addEventListener('click', function(e) {
+    var tab = e.target.closest ? e.target.closest('.cat-tab') : (e.target.classList.contains('cat-tab') ? e.target : null);
+    if (!tab) return;
+    filterCatalogue(tab.getAttribute('data-val'), tab);
+  });
+  renderCatalogueGrid(shuffle(COCKTAILS.slice())); // Affichage initial mélangé
+}
+
+// Filtre la grille selon la valeur de l'onglet sélectionné.
+// '__favs__' est une valeur spéciale qui déclenche le mode favoris.
+function filterCatalogue(value, tabEl) {
+  document.querySelectorAll('.cat-tab').forEach(function(t) { t.classList.remove('active'); });
+  tabEl.classList.add('active');
+  if (value === '__favs__') {
+    var favCocktails = COCKTAILS.filter(function(c) { return isFav(c.id); });
+    if (favCocktails.length === 0) {
+      document.getElementById('catalogue-results').innerHTML = '<div class="empty-state"><div class="big">🤍</div><p>Aucun favori pour l&#39;instant.<br>Cliquez sur 🤍 sur n&#39;importe quel cocktail !</p></div>';
+    } else {
+      renderCatalogueGrid(favCocktails);
+    }
+    document.getElementById('catalogue-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  var field = catMode === 'cat' ? 'cat' : 'baseAlcool';
+  var filtered = value === 'all' ? COCKTAILS.slice() : COCKTAILS.filter(function(r) { return r[field] === value; });
+  renderCatalogueGrid(shuffle(filtered)); // Mélange pour varier l'ordre à chaque clic
+  document.getElementById('catalogue-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Construit la grille HTML de cartes cocktails.
+// Le filtre de difficulté (currentDiff) est appliqué ici, en aval du filtre de catégorie.
+function renderCatalogueGrid(cocktails) {
+  var list = currentDiff === 'all' ? cocktails : cocktails.filter(function(c) { return c.diff === currentDiff; });
+  if (list.length === 0) {
+    document.getElementById('catalogue-results').innerHTML = '<div class="empty-state"><div class="big">🍸</div><p>Aucun cocktail pour ce filtre.</p></div>';
+    return;
+  }
+  var html = '<div class="results-grid">';
+  list.forEach(function(c) {
+    var stars = miniStarsHtml(c.id); // Mini étoiles si noté (vide sinon)
+    var gico = '<span class="glass-card" title="' + c.glass + '">' + glassIcon(c.glass, 20, 28) + '</span>';
+    html += '<div class="recipe-card" onclick="showRecipe(' + c.id + ')">'
+      + '<div class="recipe-card-img">' + c.emoji + heartBtn(c.id) + '</div>'
+      + '<div class="recipe-card-body"><div class="recipe-card-title">' + c.title + '</div>'
+      + '<div class="recipe-card-meta"><span>🕒 ' + c.prep + ' min</span><span>🥃 ' + c.baseAlcool + '</span>' + gico + (stars ? stars : '') + '</div>'
+      + '<div class="recipe-card-tags"><span class="tag diff-' + c.diff + '">' + c.diff + '</span><span class="tag">' + c.cat + '</span></div>'
+      + '</div></div>';
+  });
+  html += '</div>';
+  document.getElementById('catalogue-results').innerHTML = html;
+}
+
+// ── 6b. RECHERCHE DANS LE CATALOGUE ──────────────────────────────────────
+// La barre de recherche est PRIORITAIRE sur les filtres catégorie et difficulté :
+// execCatSearch() bypasse filterCatalogue() et renderCatalogueGrid() entièrement.
+function onCatSearch(query) {
+  // Affiche/masque le bouton ✕ en temps réel à la saisie (pas de recherche auto)
+  document.getElementById('cat-search-clear').style.display = query.length > 0 ? 'block' : 'none';
+}
+
+function execCatSearch() {
+  var query = document.getElementById('cat-search-input').value.trim();
+  if (!query) { loadCatalogueTabs(); return; } // Barre vide → retour au catalogue normal
+  var q = query.toLowerCase();
+  // Recherche partielle (indexOf) dans 4 champs : titre, tags, alcool de base, catégorie
+  var results = COCKTAILS.filter(function(c) {
+    return c.title.toLowerCase().indexOf(q) !== -1
+      || c.tags.some(function(t) { return t.toLowerCase().indexOf(q) !== -1; })
+      || c.baseAlcool.toLowerCase().indexOf(q) !== -1
+      || c.cat.toLowerCase().indexOf(q) !== -1;
+  });
+  // Afficher sans appliquer currentDiff ni catMode
+  var container = document.getElementById('catalogue-results');
+  if (results.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="big">🍸</div><p>Aucun cocktail trouvé pour « ' + query + ' ».</p></div>';
+  } else {
+    var html = '<div class="results-grid">';
+    results.forEach(function(c) {
+      var stars = miniStarsHtml(c.id);
+      var gico = '<span class="glass-card" title="' + c.glass + '">' + glassIcon(c.glass, 20, 28) + '</span>';
+      html += '<div class="recipe-card" onclick="showRecipe(' + c.id + ')">'
+        + '<div class="recipe-card-img">' + c.emoji + heartBtn(c.id) + '</div>'
+        + '<div class="recipe-card-body"><div class="recipe-card-title">' + c.title + '</div>'
+        + '<div class="recipe-card-meta"><span>🕒 ' + c.prep + ' min</span><span>🥃 ' + c.baseAlcool + '</span>' + gico + (stars || '') + '</div>'
+        + '<div class="recipe-card-tags"><span class="tag diff-' + c.diff + '">' + c.diff + '</span><span class="tag">' + c.cat + '</span></div>'
+        + '</div></div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  }
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Vide la barre de recherche et restaure le catalogue avec les filtres normaux
+function clearCatSearch() {
+  document.getElementById('cat-search-input').value = '';
+  document.getElementById('cat-search-clear').style.display = 'none';
+  loadCatalogueTabs();
+}
+
+// ── 7. PAGE ALÉATOIRE ─────────────────────────────────────────────────────
+// Sélectionne un cocktail au hasard et affiche une carte cliquable.
+// Le bouton "Nouveau cocktail" rappelle simplement cette fonction.
+function pickRandom() {
+  var c = COCKTAILS[Math.floor(Math.random() * COCKTAILS.length)];
+  var container = document.getElementById('random-recipe-container');
+  container.innerHTML = '<div class="recipe-card" onclick="showRecipe(' + c.id + ')" style="max-width:380px;margin:0 auto;">'
+    + '<div class="recipe-card-img">' + c.emoji + heartBtn(c.id) + '</div>'
+    + '<div class="recipe-card-body"><div class="recipe-card-title">' + c.title + '</div>'
+    + '<div class="recipe-card-meta"><span>🕒 ' + c.prep + ' min</span><span>🥃 ' + c.baseAlcool + '</span><span>🍸 ' + c.cat + '</span></div>'
+    + '<div class="recipe-card-tags"><span class="tag diff-' + c.diff + '">' + c.diff + '</span>'
+    + c.tags.slice(0, 3).map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('')
+    + '</div></div></div>';
+}
+
+// ── 8. FICHE RECETTE ──────────────────────────────────────────────────────
+// Construit la fiche complète d'un cocktail et navigue vers page-recipe.
+// Tous les blocs (ingrédients, étapes, étoiles, profil, notes) sont assemblés
+// en une seule chaîne HTML pour une injection unique dans le DOM (performance).
+function showRecipe(id) {
+  var c = COCKTAILS.filter(function(r) { return r.id === id; })[0];
+  if (!c) return;
+  navTo('recipe');
+  var note = getNote(id);
+  var ingHtml = '';
+  c.ingredients.forEach(function(ing) {
+    // data-base-qty et data-unit permettent au sélecteur de portions de recalculer
+    ingHtml += '<li><span>' + ing[0] + '</span><span class="ing-qty" data-base-qty="' + ing[1] + '" data-unit="' + ing[2] + '">' + ing[1] + ' ' + ing[2] + '</span></li>';
+  });
+  var stepsHtml = c.steps.map(function(s) { return '<li>' + s + '</li>'; }).join('');
+  var optHtml = Array.from({length:10}, function(_,i){ return '<option value="'+(i+1)+'"'+(i+1===c.portions?' selected':'')+'>'+( i+1)+'</option>'; }).join('');
+  var faved = isFav(id);
+
+  // Bloc verre : SVG + label texte sous l'icône
+  var glassSvg = '<div class="info-glass-wrap">'
+    + '<span class="glass-icon">' + glassIcon(c.glass, 30, 42) + '</span>'
+    + '<span class="info-glass-name">' + c.glass + '</span>'
+    + '</div>';
+
+  var html = '<div class="recipe-header">'
+    + '<div class="recipe-hero-img">' + c.emoji + '</div>'
+    + '<div class="recipe-title-row">'
+    + '<h1 class="recipe-big-title">' + c.title + '</h1>'
+    + '<div class="recipe-badges">'
+    + '<span class="tag diff-' + c.diff + '">' + c.diff + '</span>'
+    + '<span class="tag">' + c.cat + '</span>'
+    + '<span class="tag">🥃 ' + c.baseAlcool + '</span>'
+    + '</div></div>'
+    + '<button id="recipe-like-btn" class="recipe-like-btn' + (faved ? ' liked' : '') + '" data-id="' + id + '" onclick="onLikeCard(event,' + id + ')">'
+    + '<span class="rl-ico">' + (faved ? '❤️' : '🤍') + '</span>'
+    + '<span class="rl-txt">' + (faved ? 'Retirer des favoris' : 'Ajouter aux favoris') + '</span>'
+    + '</button>'
+    + '<div class="recipe-infos">'
+    + '<div class="info-block"><div class="info-label">PRÉPARATION</div><div class="info-val">' + c.prep + ' min</div></div>'
+    + '<div class="info-block"><div class="info-label">VERRE</div><div class="info-val">' + glassSvg + '</div></div>'
+    + '<div class="info-block"><div class="info-label">PORTIONS</div><div class="info-val"><select id="portions-selector" onchange="updateQuantities(' + id + ')">' + optHtml + '</select></div></div>'
+    + '</div></div>'
+    + '<div class="recipe-body">'
+    + '<div>'
+    + '<div class="recipe-section-title">INGRÉDIENTS</div>'
+    + '<ul class="ingredients-list" id="ingredients-list-' + id + '">' + ingHtml + '</ul>'
+    + '</div>'
+    + '<div>'
+    + '<div class="recipe-section-title">PRÉPARATION</div>'
+    + '<ol class="steps-list">' + stepsHtml + '</ol>'
+    + '</div></div>'
+    + buildTasteProfile(id)    // Profil gustatif en premier
+    + buildStarsHtml(id)       // Ma note juste en dessous
+    + '<div class="notes-block">'
+    + '<div class="recipe-section-title" style="margin-top:24px;margin-bottom:10px">MES NOTES</div>'
+    + '<textarea id="notes-ta-' + id + '" class="notes-textarea" placeholder="Ajoutez vos notes personnelles : dosage préféré, variantes, astuces..." oninput="saveNote(' + id + ', this.value)">' + note.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</textarea>'
+    + '<div id="notes-saved-' + id + '" class="notes-saved">✓ Note sauvegardée</div>'
+    + '</div>';
+  document.getElementById('recipe-content').innerHTML = html;
+}
+
+// Recalcule toutes les quantités d'ingrédients selon le nombre de portions choisi.
+// Les valeurs de base sont stockées en data-attributes sur chaque élément .ing-qty
+// pour permettre un recalcul précis à partir des données originales (pas cumulatif).
+function updateQuantities(id) {
+  var c = COCKTAILS.filter(function(r) { return r.id === id; })[0];
+  if (!c) return;
+  var ratio = parseInt(document.getElementById('portions-selector').value, 10) / c.portions;
+  document.querySelectorAll('#ingredients-list-' + id + ' li').forEach(function(item) {
+    var qty = item.querySelector('.ing-qty');
+    if (!qty) return;
+    var base = parseFloat(qty.getAttribute('data-base-qty'));
+    var unit = qty.getAttribute('data-unit');
+    // toFixed(1) puis suppression des zéros en fin : "2.0" → "2", "1.50" → "1.5"
+    var nq = (base * ratio).toFixed(1).replace(/\.?0+$/, '');
+    qty.textContent = nq + ' ' + unit;
+  });
+}
+
+// ── 16. INITIALISATION ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  // Active le bouton "retour en haut" dès que l'utilisateur défile
+  window.addEventListener('scroll', function() {
+    var st = document.getElementById('btn-scroll-top');
+    if (st) st.classList.toggle('visible', window.scrollY > 80);
+  });
+  // Initialise l'état History API pour que le premier popstate soit capturé correctement
+  history.replaceState({ page: 'home' }, '', '');
+
+  // ── Enregistrement du Service Worker (PWA) ────────────────────────────
+  // Le SW n'est disponible que sur HTTPS ou localhost.
+  // On vérifie la disponibilité avant de tenter l'enregistrement pour éviter
+  // toute erreur sur un contexte non sécurisé (ouverture locale file://).
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js')
+        .then(function(reg) {
+          console.log('[PWA] Service Worker enregistré :', reg.scope);
+        })
+        .catch(function(err) {
+          console.warn('[PWA] Enregistrement SW échoué (normal en file://) :', err);
+        });
+    });
+  }
+});
+
+// ── 11. SILHOUETTES SVG DES VERRES ───────────────────────────────────────
+// 7 formes dessinées au trait (stroke), 100% inline, aucune dépendance externe.
+// Chaque fonction prend une largeur et hauteur optionnelles pour s'adapter au contexte
+// (petite icône sur carte vs grande icône dans la fiche recette).
+var G = {
+  // 1. Highball — grand cylindre droit, parois quasi verticales (Collins aussi)
+  highball: function(w,h){ w=w||28;h=h||50;
+    return '<svg viewBox="0 0 34 62" width="'+w+'" height="'+h+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M6,3 L28,3 L25,59 L9,59 Z"/></svg>'; },
+  // 2. Rocks / Old Fashioned — court et large (aussi Shot, Pousse-café)
+  rocks: function(w,h){ w=w||32;h=h||28;
+    return '<svg viewBox="0 0 42 38" width="'+w+'" height="'+h+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4,4 L38,4 L35,34 L7,34 Z"/></svg>'; },
+  // 3. Coupe — large bol hémisphérique sur tige fine (aussi verre à pied, absinthe)
+  coupe: function(w,h){ w=w||38;h=h||52;
+    return '<svg viewBox="0 0 50 62" width="'+w+'" height="'+h+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5,7 Q5,30 25,31 Q45,30 45,7 Z"/><line x1="25" y1="31" x2="25" y2="52"/><line x1="15" y1="52" x2="35" y2="52"/></svg>'; },
+  // 4. Martini — triangle inversé iconique sur tige fine
+  martini: function(w,h){ w=w||38;h=h||52;
+    return '<svg viewBox="0 0 50 62" width="'+w+'" height="'+h+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5,5 45,5 25,34"/><line x1="25" y1="34" x2="25" y2="54"/><line x1="15" y1="54" x2="35" y2="54"/></svg>'; },
+  // 5. Flûte — très haute, très étroite (champagne, prosecco)
+  flute: function(w,h){ w=w||20;h=h||58;
+    return '<svg viewBox="0 0 28 72" width="'+w+'" height="'+h+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7,4 Q12,4 13,42 Q14,50 14,50 Q14,50 15,42 Q16,4 21,4"/><line x1="7" y1="4" x2="21" y2="4"/><line x1="14" y1="50" x2="14" y2="64"/><line x1="8" y1="64" x2="20" y2="64"/></svg>'; },
+  // 6. Ballon / Copa — bol largement évasé sur tige fine avec base (Porto Tonic, G&T espagnol)
+  ballon: function(w,h){ w=w||42;h=h||54;
+    return '<svg viewBox="0 0 52 66" width="'+w+'" height="'+h+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6,5 C6,5 4,34 26,38 C48,34 46,5 46,5 Z"/><path d="M26,38 C24,44 22,50 20,54"/><path d="M26,38 C28,44 30,50 32,54"/><line x1="14" y1="54" x2="38" y2="54"/></svg>'; },
+  // 7. Tiki mug / Mug en cuivre — chope rectangulaire avec anse latérale (Moscow Mule, Julep)
+  tiki: function(w,h){ w=w||36;h=h||46;
+    return '<svg viewBox="0 0 48 56" width="'+w+'" height="'+h+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8,6 L40,6 L40,50 L8,50 Z"/><line x1="8" y1="6" x2="40" y2="6"/><path d="M40,16 C40,16 49,18 49,28 C49,38 40,40 40,40"/><line x1="8" y1="50" x2="40" y2="50"/></svg>'; },
+};
+
+// Détermine quelle silhouette SVG utiliser selon le nom de verre du cocktail.
+// Logique inclusive : "Rocks ou Coupe" → rocks, "Copa (ballon)" → ballon, etc.
+function glassKey(name) {
+  var n = (name || '').toLowerCase();
+  if (n.includes('highball') || n.includes('collins')) return 'highball';
+  if (n.includes('rocks') && !n.includes('coupe'))    return 'rocks';
+  if (n.includes('rocks ou coupe') || n.includes('rocks or')) return 'rocks';
+  if (n.includes('martini'))                           return 'martini';
+  if (n.includes('flûte') || n.includes('flute'))     return 'flute';
+  if (n.includes('coupe'))                             return 'coupe';
+  if (n.includes('ballon') || n.includes('copa') || n.includes('balloon')) return 'ballon';
+  if (n.includes('tiki') || n.includes('mug') || n.includes('julep') || n.includes('punch')) return 'tiki';
+  if (n.includes('shot') || n.includes('pousse'))      return 'rocks';
+  if (n.includes('pied') || n.includes('toddy') || n.includes('absinthe') || n.includes('verre à')) return 'coupe';
+  return 'highball'; // Fallback par défaut
+}
+
+// Point d'entrée public : retourne le SVG prêt à insérer dans le DOM
+function glassIcon(name, w, h) {
+  var key = glassKey(name);
+  var fn = G[key] || G.highball;
+  return fn(w, h);
+}
+
+// ── 12. NOTATION 5 ÉTOILES ────────────────────────────────────────────────
+// RATINGS est un objet {id: score} persisté sous la clé 'mc_ratings'.
+// On le charge au démarrage et on le maintient en mémoire.
+var RATINGS = lsGet('mc_ratings', {});
+
+function getRating(id) { return RATINGS[id] || 0; }
+
+// Clic sur une étoile déjà active → remet la note à 0 (toggle off)
+function setRating(id, stars) {
+  RATINGS[id] = (RATINGS[id] === stars) ? 0 : stars;
+  lsSet('mc_ratings', RATINGS);
+  refreshStarsUI(id);
+}
+
+// Met à jour l'affichage des étoiles sans recharger la fiche
+function refreshStarsUI(id) {
+  var r = getRating(id);
+  var row = document.getElementById('stars-' + id);
+  if (!row) return;
+  row.querySelectorAll('.star').forEach(function(s, i) {
+    s.classList.toggle('on', i < r);
+    s.textContent = i < r ? '★' : '☆';
+  });
+  var hint = row.parentElement.querySelector('.rating-hint');
+  if (hint) hint.textContent = r > 0 ? ['','⭐ Décevant','👍 Correct','😊 Bon','🔥 Excellent','🏆 Parfait'][r] : '';
+}
+
+// Prévisualisation au survol : affiche les étoiles comme si on avait noté n
+function hoverStars(id, n) {
+  var row = document.getElementById('stars-' + id);
+  if (!row) return;
+  row.querySelectorAll('.star').forEach(function(s, i) {
+    s.classList.toggle('on', i < n);
+    s.textContent = i < n ? '★' : '☆';
+  });
+}
+
+// Restaure l'état réel quand la souris quitte le bloc étoiles
+function resetStars(id) { refreshStarsUI(id); }
+
+// Construit le bloc HTML complet de notation inséré dans la fiche recette
+function buildStarsHtml(id) {
+  var r = getRating(id);
+  var html = '<div class="rating-section">'
+    + '<div class="rating-label">MA NOTE</div>'
+    + '<div id="stars-' + id + '" class="star-row">';
+  for (var i = 1; i <= 5; i++) {
+    html += '<span class="star' + (i <= r ? ' on' : '') + '"'
+      + ' onclick="setRating(' + id + ',' + i + ')"'
+      + ' onmouseover="hoverStars(' + id + ',' + i + ')"'
+      + ' onmouseout="resetStars(' + id + ')">'
+      + (i <= r ? '★' : '☆') + '</span>';
+  }
+  html += '</div><span class="rating-hint">'
+    + (r > 0 ? ['','⭐ Décevant','👍 Correct','😊 Bon','🔥 Excellent','🏆 Parfait'][r] : '')
+    + '</span></div>';
+  return html;
+}
+
+// Version miniature pour les cartes du catalogue : n'affiche que si noté
+function miniStarsHtml(id) {
+  var r = getRating(id);
+  if (r === 0) return ''; // Pas de note → pas d'affichage sur la carte
+  var html = '<span class="stars-mini">';
+  for (var i = 1; i <= 5; i++) {
+    html += '<span class="sm' + (i > r ? ' off' : '') + '">★</span>';
+  }
+  return html + '</span>';
+}
+
+// ── 10. FILTRE DIFFICULTÉ ─────────────────────────────────────────────────
+// currentDiff est une variable globale lue par renderCatalogueGrid().
+// Changer le filtre déclenche immédiatement un rendu en récupérant l'onglet actif.
+var currentDiff = 'all';
+
+function setDiffFilter(diff, el) {
+  currentDiff = diff;
+  // Retire toutes les classes active-* puis en ajoute la bonne
+  document.querySelectorAll('.diff-chip').forEach(function(c) { c.className = 'diff-chip'; });
+  el.classList.add('active-' + diff);
+  // Réapplique le filtre de catégorie en cours pour mettre à jour la grille
+  var activeTab = document.querySelector('#cat-tabs .cat-tab.active');
+  if (activeTab) filterCatalogue(activeTab.getAttribute('data-val'), activeTab);
+}
+
+// ── LEXIQUE ───────────────────────────────────────────────────────────────
+var LEXIQUE = {
+  techniques: [
+    { name:'Build / Construire', ico:'🏗️', body:'Verser les ingrédients directement dans le verre de service sur glaçons, sans shaker ni verre mélangeur. Méthode pour les long drinks simples comme le G&T ou le Mojito.' },
+    { name:'Stir / Remuer', ico:'🥄', body:'Mélanger les ingrédients au mixing glass avec une cuillère de bar pendant 20 à 30 secondes. Réservé aux cocktails 100% alcooleux (Manhattan, Negroni) pour une texture soyeuse sans dilution excessive.' },
+    { name:'Shake / Shaker', ico:'🧊', body:'Agiter vigoureusement les ingrédients avec de la glace dans un shaker pendant 10 à 15 secondes. Refroidit, dilue et émulsionne. Utilisé pour les cocktails contenant jus, crème ou blanc d\'œuf.' },
+    { name:'Dry Shake', ico:'🥚', body:'Shaker les ingrédients sans glace dans un premier temps pour monter les blancs d\'œuf ou la crème et créer de la mousse. Puis recommencer avec la glace. Indispensable pour le Whisky Sour ou le Pisco Sour.' },
+    { name:'Double Strain', ico:'🔬', body:'Filtrer deux fois : une première fois avec la passoire Hawthorne, une seconde avec un chinois fin. Élimine tous les éclats de glace et les pulpes pour un cocktail parfaitement limpide.' },
+    { name:'Muddle / Piler', ico:'🪨', body:'Écraser des herbes fraîches, des fruits ou des épices au fond du verre avec un pilon (muddler) pour en extraire les arômes. Geste délicat : on presse sans déchirer pour éviter l\'amertume.' },
+    { name:'Float / Faire flotter', ico:'🌊', body:'Verser délicatement un liquide sur le dos d\'une cuillère de bar posée en surface pour qu\'il reste en couche distincte sans se mélanger. Utilisé pour les shooter en couches ou le Dark & Stormy.' },
+    { name:'Dash', ico:'💧', body:'Une giclée brève, environ 0,5 à 1 ml. Terme utilisé pour les amers et les sirops intenses (Angostura, Peychaud\'s). Un dash = un coup sec sur la bouteille tenue à l\'envers.' },
+    { name:'Twist / Zeste', ico:'🍊', body:'Tordre un morceau d\'écorce d\'agrume au-dessus du verre pour en extraire les huiles essentielles qui se déposent en fine brume sur la surface. Apporte arôme et brillance au cocktail.' },
+    { name:'Rim / Givrer le verre', ico:'🧂', body:'Humidifier le bord du verre avec un quartier de citron puis le plonger dans du sel, du sucre ou des épices. Le bord givré se déguste à chaque gorgée et modifie la perception des saveurs.' },
+    { name:'Top / Coiffer', ico:'🫧', body:'Compléter le verre avec un ingrédient gazeux (champagne, prosecco, sodas) en fin de préparation. On verse doucement sur le dos d\'une cuillère pour préserver les bulles et ne pas homogénéiser.' },
+    { name:'Flamber', ico:'🔥', body:'Enflammer brièvement un zeste d\'agrume ou un alcool fort au-dessus du verre. La chaleur caramélise légèrement les huiles essentielles et ajoute une note fumée et spectaculaire. Technique de présentation.' },
+  ],
+  alcools: [
+    { name:'Amaretto', ico:'🌰', body:'Liqueur italienne à base d\'amande amère ou de noyaux d\'abricot, avec des notes de vanille et de marzipan. Douce, ronde, entre 21 et 28°. Base du Godfather et de l\'Amaretto Sour.' },
+    { name:'Aperol', ico:'🍊', body:'Apéritif italien orange, 11°, aux notes d\'orange amère, rhubarbe et gentiane. Moins amer que le Campari. Incontournable de l\'Aperol Spritz.' },
+    { name:'Baileys', ico:'☕', body:'Liqueur irlandaise de crème et whisky, 17°. Saveur crémeuse café-chocolat. Se sert sur glace ou en shooter. Sensible à la chaleur et aux acides (caille avec le jus de citron).' },
+    { name:'Campari', ico:'🔴', body:'Apéritif italien rouge vif, 25°, aux herbes, épices et écorces d\'agrumes. Intensément amer. Pilier du Negroni et du Boulevardier. Ne se substitue pas facilement à l\'Aperol.' },
+    { name:'Chartreuse', ico:'🌿', body:'Liqueur française de montagne fabriquée par les moines chartreux selon une recette secrète de 130 plantes. Verte (55°) : puissante et herbeuse. Jaune (40°) : plus douce et miellée.' },
+    { name:'Cointreau / Triple Sec', ico:'🍊', body:'Liqueur d\'écorces d\'oranges douces et amères, 40°. Sèche, propre, peu sucrée. Base indispensable de la Margarita, du Cosmopolitan et du Sidecar. Le Cointreau est la version premium du Triple Sec.' },
+    { name:'Curaçao', ico:'🔵', body:'Liqueur d\'écorces d\'orange de l\'île de Curaçao. Le bleu (Blue Curaçao) est coloré artificiellement mais a le même goût que l\'orange. Utilisé pour la couleur dans le Blue Lagoon et certains Tiki.' },
+    { name:'Falernum', ico:'🌴', body:'Sirop ou liqueur des Caraïbes à base de rhum, amande, citron vert et épices (clou de girofle, gingembre). Incontournable de la mixologie Tiki, apporte une douceur épicée et exotique.' },
+    { name:'Frangelico', ico:'🤎', body:'Liqueur italienne de noisette sauvage dans une bouteille en forme de moine franciscain, 20°. Notes de noisette, vanille et cacao. Excellent dans les cocktails au café ou au chocolat.' },
+    { name:'Galliano', ico:'⭐', body:'Liqueur italienne dorée de 30 herbes et épices, 42,3°. Notes dominantes de vanille et d\'anis. Bouteille haute caractéristique. Composant du Harvey Wallbanger et du Golden Dream.' },
+    { name:'Kahlúa', ico:'☕', body:'Liqueur mexicaine de café arabica et rhum, 20°. Très sucrée, riche en café. Composant du White Russian, du Black Russian et de l\'Espresso Martini.' },
+    { name:'Maraschino', ico:'🍒', body:'Liqueur dalmate de cerise marasca et ses noyaux, 32°. Sèche, complexe, notes d\'amande et de cerise. Rien à voir avec les cerises au sirop. Composant de l\'Aviation et du Hemingway Daiquiri.' },
+    { name:'Mezcal', ico:'🌵', body:'Eau-de-vie mexicaine distillée à partir de cœurs d\'agave (piñas) cuits au feu de bois. Plus large et plus fumé que la tequila, qui n\'est qu\'un type de mezcal. Chaque agave donne un profil unique.' },
+    { name:'Midori', ico:'🍈', body:'Liqueur japonaise de melon charentais, 20°. Couleur vert fluo naturelle. Très sucrée, parfum de melon intense. Base du Midori Sour. S\'utilise en petite quantité pour ne pas dominer.' },
+    { name:'Orgeat', ico:'🌸', body:'Sirop d\'amande douce, fleur d\'oranger et eau de rose. Laiteux, délicat, parfumé. Indispensable du Mai Tai et de nombreux cocktails Tiki. Ne se remplace pas par du sirop d\'amande industriel.' },
+    { name:'Pisco', ico:'🍇', body:'Eau-de-vie de raisin muscat produite au Pérou et au Chili (avec des appellations distinctes). Non vieillie, fruitée et florale. Base du Pisco Sour, cocktail national péruvien.' },
+    { name:'St-Germain', ico:'💐', body:'Liqueur française de fleurs de sureau fraîchement cueillies, 20°. Arôme floral délicat, légèrement pêche et litchi. S\'associe bien avec le gin, le champagne et les agrumes. Hugo Spritz et French 75 revisité.' },
+    { name:'Angostura Bitters', ico:'🌿', body:'Concentré aromatique de plantes et d\'épices, 44,7°. Amer intense, quelques gouttes suffisent. Indispensable de l\'Old Fashioned, du Manhattan et du Pink Gin. Ne s\'utilise pas comme un alcool ordinaire.' },
+  ],
+  materiel: [
+    { name:'Shaker Boston', ico:'🔩', body:'Shaker professionnel en deux pièces : un grand verre en inox et un plus petit (verre ou inox). Plus efficace que le shaker Cobbler, préféré des bartenders. Nécessite une passoire séparée.' },
+    { name:'Shaker Cobbler', ico:'🥤', body:'Shaker trois pièces avec passoire intégrée et capuchon doseur. Plus pratique pour les débutants. Moins performant que le Boston car la passoire peut se bloquer avec les glaçons.' },
+    { name:'Jigger / Doseur', ico:'⚖️', body:'Double cône en inox pour mesurer précisément les volumes. La plupart sont 4 cl / 2 cl ou 5 cl / 2,5 cl. La précision en cocktail est non négociable pour la cohérence des recettes.' },
+    { name:'Strainer Hawthorne', ico:'🌀', body:'Passoire à ressort spiralé qui s\'appuie sur le bord du shaker. Filtre les glaçons tout en laissant passer le liquide. Indispensable avec le shaker Boston.' },
+    { name:'Mixing Glass', ico:'🫙', body:'Grand verre épais (50 cl env.) pour remuer les cocktails au lieu de les shaker. Utilisé pour les cocktails à base uniquement d\'alcool (Negroni, Manhattan). Se combine avec une cuillère de bar.' },
+    { name:'Bar Spoon / Cuillère de bar', ico:'🥄', body:'Longue cuillère torsadée (~30 cm) pour remuer sans créer de bulles, pour layerles courants, et pour la technique du Float. La spirale permet un mouvement fluide et contrôlé.' },
+    { name:'Muddler / Pilon', ico:'🪨', body:'Pilon en bois, inox ou plastique pour écraser (muddler) les herbes et fruits au fond du verre. Préférer les modèles sans dents (flat bottom) pour éviter d\'amertumer les herbes.' },
+    { name:'Chinois fin / Fine strainer', ico:'🕸️', body:'Petite passoire à mailles très fines, tenue au-dessus du verre pendant le service. Utilisé en double strain pour retirer les éclats de glace, la pulpe et les herbes après le shaker.' },
+    { name:'Zesteur / Économe à canal', ico:'🍋', body:'Outil pour prélever un long ruban d\'écorce ou un twist fin sans emporter la partie blanche amère. Le zeste sert à aromatiser et décorer. Différent d\'un économe classique.' },
+    { name:'Blender de bar', ico:'⚡', body:'Blender puissant (min. 1000W) pour mixer les cocktails frappés (Piña Colada, Daiquiri Frozen). La glace pilée s\'obtient soit au blender soit en tapant les glaçons dans un torchon.' },
+  ],
+};
+
+var currentLexTab = 'techniques';
+var currentLexQuery = '';
+
+function openLexique() {
+  navTo('lexique');
+  currentLexTab = 'techniques';
+  currentLexQuery = '';
+  document.querySelectorAll('.lex-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('lt-techniques').classList.add('active');
+  document.getElementById('lex-search').value = '';
+  document.getElementById('lex-clear').style.display = 'none';
+  renderLexique();
+}
+
+function setLexTab(tab, el) {
+  currentLexTab = tab;
+  document.querySelectorAll('.lex-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  currentLexQuery = '';
+  document.getElementById('lex-search').value = '';
+  document.getElementById('lex-clear').style.display = 'none';
+  renderLexique();
+}
+
+function filterLexique(q) {
+  currentLexQuery = q.trim().toLowerCase();
+  document.getElementById('lex-clear').style.display = q.length > 0 ? 'block' : 'none';
+  // En mode recherche, chercher dans tous les onglets
+  renderLexique();
+}
+
+function clearLexique() {
+  currentLexQuery = '';
+  document.getElementById('lex-search').value = '';
+  document.getElementById('lex-clear').style.display = 'none';
+  renderLexique();
+}
+
+function renderLexique() {
+  var q = currentLexQuery;
+  var items;
+  if (q) {
+    // Chercher dans tous les onglets
+    items = [];
+    ['techniques','alcools','materiel'].forEach(function(cat) {
+      LEXIQUE[cat].forEach(function(item) {
+        if (item.name.toLowerCase().indexOf(q) !== -1 || item.body.toLowerCase().indexOf(q) !== -1) {
+          items.push(Object.assign({}, item, { _cat: cat }));
+        }
+      });
+    });
+  } else {
+    items = LEXIQUE[currentLexTab].map(function(item) { return Object.assign({}, item, { _cat: currentLexTab }); });
+  }
+
+  var container = document.getElementById('lex-list');
+  if (items.length === 0) {
+    container.innerHTML = '<div class="lex-empty">Aucun résultat pour « ' + q + ' »</div>';
+    return;
+  }
+
+  function hl(text) {
+    if (!q) return text;
+    var re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+    return text.replace(re, '<span class="lex-highlight">$1</span>');
+  }
+
+  container.innerHTML = items.map(function(item, i) {
+    return '<div class="lex-item" id="lex-item-' + i + '" onclick="toggleLexItem(' + i + ')">'
+      + '<div class="lex-item-head">'
+      + '<span class="lex-item-name"><span class="lex-item-ico">' + item.ico + '</span>' + hl(item.name) + '</span>'
+      + '<span class="lex-arrow">›</span>'
+      + '</div>'
+      + '<div class="lex-item-body">' + hl(item.body) + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function toggleLexItem(i) {
+  var el = document.getElementById('lex-item-' + i);
+  if (!el) return;
+  var wasOpen = el.classList.contains('open');
+  // Fermer tous les items
+  document.querySelectorAll('.lex-item.open').forEach(function(x){ x.classList.remove('open'); });
+  if (!wasOpen) el.classList.add('open');
+}
+
+// ── PROFILS GUSTATIFS ─────────────────────────────────────────────────────
+// Chaque cocktail a 3 scores sur 5 :
+//   s = sucrosité  (0 = sec / 5 = très sucré)
+//   b = amertume   (0 = aucune / 5 = très amer)
+//   a = alcool     (0 = sans / 1 = léger / 2 = modéré / 3 = standard / 4 = corsé / 5 = très fort)
+//
+// Échelle alcool de référence :
+//   0 → sans alcool       1 → < 8°   (Kir, Bellini)
+//   2 → 8–14° environ     (Spritz, punch léger)
+//   3 → 15–20° environ    (Mojito, Cosmopolitan, plupart des cocktails)
+//   4 → 20–28° environ    (Negroni, Manhattan, Old Fashioned, Sour corsé)
+//   5 → > 28° ou multi-alcools (Zombie, Long Island, B-52)
+var PROFILES = {
+  // Rhum
+  1:{s:2,b:1,a:3},   // Mojito
+  2:{s:1,b:0,a:3},   // Daiquiri
+  3:{s:4,b:0,a:3},   // Piña Colada
+  4:{s:3,b:0,a:3},   // Cuba Libre
+  5:{s:2,b:1,a:3},   // Dark & Stormy
+  6:{s:3,b:1,a:4},   // Mai Tai
+  7:{s:3,b:1,a:5},   // Zombie
+  8:{s:2,b:0,a:4},   // Between the Sheets
+  9:{s:2,b:3,a:4},   // Jungle Bird
+  10:{s:4,b:0,a:3},  // Painkiller
+  11:{s:3,b:0,a:3},  // Strawberry Daiquiri
+  12:{s:1,b:1,a:3},  // Hemingway Daiquiri
+  13:{s:2,b:2,a:4},  // Rum Old Fashioned
+  14:{s:2,b:1,a:4},  // El Presidente
+  // Vodka
+  15:{s:2,b:1,a:3},  // Cosmopolitan
+  16:{s:2,b:1,a:3},  // Moscow Mule
+  17:{s:0,b:2,a:3},  // Bloody Mary
+  18:{s:3,b:0,a:3},  // Screwdriver
+  19:{s:1,b:2,a:3},  // Vodka Tonic
+  20:{s:4,b:0,a:3},  // Sex on the Beach
+  21:{s:2,b:2,a:4},  // Espresso Martini
+  22:{s:3,b:1,a:3},  // White Russian
+  23:{s:2,b:2,a:4},  // Black Russian
+  24:{s:3,b:0,a:3},  // Harvey Wallbanger
+  25:{s:3,b:0,a:2},  // Blue Lagoon
+  26:{s:2,b:0,a:3},  // Caipiroska
+  27:{s:4,b:0,a:3},  // Pornstar Martini
+  28:{s:0,b:1,a:4},  // Vodka Martini
+  29:{s:2,b:0,a:4},  // Kamikaze
+  // Gin
+  30:{s:1,b:2,a:3},  // Gin & Tonic
+  31:{s:1,b:4,a:4},  // Negroni
+  32:{s:2,b:1,a:3},  // Tom Collins
+  33:{s:0,b:2,a:4},  // Martini Gin
+  34:{s:2,b:0,a:4},  // Gimlet
+  35:{s:2,b:0,a:3},  // French 75
+  36:{s:3,b:2,a:4},  // Singapore Sling
+  37:{s:2,b:1,a:3},  // Gin Basil Smash
+  38:{s:2,b:0,a:3},  // Bee's Knees
+  39:{s:2,b:2,a:4},  // Last Word
+  40:{s:2,b:1,a:3},  // Aviation
+  41:{s:2,b:0,a:3},  // Clover Club
+  42:{s:2,b:0,a:3},  // Gin Fizz
+  // Whisky
+  43:{s:2,b:2,a:4},  // Old Fashioned
+  44:{s:2,b:1,a:3},  // Whisky Sour
+  45:{s:2,b:3,a:4},  // Manhattan
+  46:{s:2,b:3,a:4},  // Boulevardier
+  47:{s:2,b:1,a:4},  // Mint Julep
+  48:{s:3,b:2,a:3},  // Irish Coffee
+  49:{s:3,b:1,a:2},  // Hot Toddy
+  50:{s:2,b:2,a:4},  // Penicillin
+  51:{s:1,b:3,a:4},  // Paper Plane
+  52:{s:2,b:1,a:3},  // New York Sour
+  53:{s:2,b:3,a:4},  // Sazerac
+  // Tequila & Mezcal
+  54:{s:2,b:1,a:3},  // Margarita
+  55:{s:2,b:1,a:3},  // Paloma
+  56:{s:4,b:0,a:2},  // Tequila Sunrise
+  57:{s:1,b:0,a:3},  // Tommy's Margarita
+  58:{s:1,b:4,a:4},  // Mezcal Negroni
+  59:{s:1,b:1,a:3},  // Spicy Margarita
+  60:{s:2,b:0,a:3},  // Caipirinha
+  // Champagne & Vins
+  61:{s:3,b:0,a:2},  // Kir Royal
+  62:{s:3,b:0,a:1},  // Bellini
+  63:{s:2,b:2,a:2},  // Aperol Spritz
+  64:{s:2,b:0,a:1},  // Mimosa
+  65:{s:3,b:0,a:2},  // Sangria
+  // Cognac & Brandy
+  66:{s:2,b:0,a:4},  // Sidecar
+  67:{s:3,b:0,a:4},  // Stinger
+  68:{s:3,b:0,a:4},  // French Connection
+  // Amaretto
+  69:{s:3,b:1,a:3},  // Amaretto Sour
+  70:{s:3,b:0,a:4},  // Godfather
+  // Absinthe
+  71:{s:1,b:2,a:5},  // Absinthe Drip
+  // Punch & Tiki
+  72:{s:3,b:0,a:3},  // Punch Planteur
+  73:{s:3,b:0,a:3},  // Punch des Iles
+  // Spritzes & Longs
+  74:{s:3,b:0,a:2},  // Moscow Mule Rosé
+  75:{s:2,b:0,a:2},  // Hugo Spritz
+  76:{s:2,b:1,a:3},  // Pisco Sour
+  77:{s:4,b:0,a:3},  // Sex on the Beach Rosé
+  78:{s:2,b:1,a:5},  // Long Island Iced Tea
+  79:{s:3,b:0,a:3},  // Pink Gin Fizz
+  80:{s:4,b:0,a:5},  // B-52
+  81:{s:3,b:0,a:2},  // Limoncello Spritz
+  82:{s:3,b:0,a:3},  // Mango Margarita
+  83:{s:4,b:0,a:3},  // Porn Star Martini champagne
+  84:{s:2,b:0,a:4},  // Cucumber Gimlet
+  85:{s:3,b:0,a:3},  // Rum Punch Caraïbes
+  86:{s:2,b:3,a:3},  // Aperol Negroni
+  87:{s:2,b:0,a:4},  // White Lady
+  88:{s:2,b:1,a:3},  // Tequila Mule
+  89:{s:4,b:0,a:2},  // Baileys sur glace
+  90:{s:2,b:1,a:2},  // Porto Tonic
+  91:{s:3,b:1,a:3},  // Mojito Fraise-Basilic
+  92:{s:2,b:1,a:3},  // Daiquiri Rhubarbe
+  93:{s:3,b:0,a:2},  // Punch Fleur de Sureau
+  94:{s:2,b:1,a:2},  // Vodka Spritz
+  95:{s:3,b:1,a:3},  // Vodka Litchi-Gingembre
+  96:{s:2,b:1,a:3},  // Gin Lavande
+  97:{s:1,b:1,a:3},  // Gin Yuzu-Basilic
+  98:{s:2,b:2,a:4},  // Blood and Sand
+  99:{s:2,b:2,a:3},  // Matcha-Hai
+  100:{s:1,b:2,a:3}, // Tequila Pamplemousse-Romarin
+  101:{s:1,b:2,a:5}, // Death in the Afternoon
+  102:{s:2,b:2,a:5}, // Bob Marley Absinthe
+  103:{s:2,b:2,a:5}, // Absinthe Frappe
+  104:{s:2,b:1,a:4}, // Japanese Cocktail
+  105:{s:2,b:1,a:4}, // Brandy Crusta
+  106:{s:3,b:0,a:3}, // Cognac Kiwi Spritz
+  107:{s:4,b:0,a:3}, // Amaretto Sunrise
+  108:{s:3,b:1,a:2}, // Amaretto Spritz Pamplemousse
+  109:{s:4,b:1,a:3}, // Tiramisu Martini
+  110:{s:2,b:0,a:1}, // Mimosa Cranberry
+  111:{s:2,b:2,a:4}, // Saveurs d'Antan
+  112:{s:4,b:0,a:1}, // Bellini Melon-Miel
+  115:{s:4,b:0,a:4}, // Brandy Alexander
+  116:{s:2,b:2,a:4}, // Champs-Élysées
+  117:{s:3,b:0,a:4}, // French Connection (dup)
+  118:{s:4,b:0,a:3}, // Almond Joy
+  119:{s:2,b:2,a:2}, // Champagne Cocktail
+  120:{s:2,b:1,a:2}, // Black Velvet
+  121:{s:3,b:1,a:2}, // Kalimotxo
+  122:{s:3,b:0,a:2}, // Tinto de Verano
+  123:{s:3,b:0,a:3}, // Madeleine
+  124:{s:2,b:1,a:3}, // Italian Mule
+  125:{s:2,b:2,a:4}, // Amaretto Espresso Martini
+  126:{s:4,b:0,a:3}, // Golden Dream
+  127:{s:3,b:0,a:3}, // Harvey Wallbanger (Amaretto)
+  128:{s:4,b:0,a:3}, // Toasted Almond
+  129:{s:3,b:0,a:4}, // Amaretto Flip
+  130:{s:3,b:0,a:3}, // Midori Sour
+  131:{s:2,b:0,a:3}, // Pink Lady
+  132:{s:3,b:0,a:3}, // Moscow Mule framboise
+};
+
+// Construit le bloc HTML "Profil gustatif" inséré dans chaque fiche recette.
+// Les barres sont animées via CSS transition (width .5s ease).
+function buildTasteProfile(id) {
+  var p = PROFILES[id];
+  if (!p) return ''; // Pas de profil défini pour cet ID → on n'affiche rien
+
+  // Conversion score /5 → pourcentage de remplissage de la barre
+  var sw = Math.round((p.s / 5) * 100);
+  var bi = Math.round((p.b / 5) * 100);
+  var al = Math.round((p.a / 5) * 100);
+
+  // Labels texte associés à chaque niveau
+  var swLabel = ['Sec','Très léger','Léger','Doux','Sucré','Très sucré'][p.s] || '';
+  var biLabel = ['Aucune','Très légère','Légère','Notable','Amer','Très amer'][p.b] || '';
+  var alLabel = ['Sans alcool','Très léger','Léger','Standard','Corsé','Très corsé'][p.a] || '';
+
+  return '<div class="taste-profile">'
+    + '<div class="taste-profile-title">PROFIL GUSTATIF</div>'
+    + '<div class="taste-row">'
+    +   '<span class="taste-label">🍬 Sucrosité</span>'
+    +   '<div class="taste-bar-bg"><div class="taste-bar-fill sweet" style="width:' + sw + '%"></div></div>'
+    +   '<span class="taste-val">' + swLabel + '</span>'
+    + '</div>'
+    + '<div class="taste-row">'
+    +   '<span class="taste-label">🌿 Amertume</span>'
+    +   '<div class="taste-bar-bg"><div class="taste-bar-fill bitter" style="width:' + bi + '%"></div></div>'
+    +   '<span class="taste-val">' + biLabel + '</span>'
+    + '</div>'
+    + '<div class="taste-row">'
+    +   '<span class="taste-label">🔥 Alcool</span>'
+    +   '<div class="taste-bar-bg"><div class="taste-bar-fill alco" style="width:' + al + '%"></div></div>'
+    +   '<span class="taste-val">' + alLabel + '</span>'
+    + '</div>'
+    + '</div>';
+}
+
+const FAMILIES = [
+  { id:'alcools', label:'Alcools forts', icon:'🥃', items:['Vodka','Rhum blanc','Rhum ambré','Rhum brun','Gin','Whisky bourbon','Scotch','Tequila','Mezcal','Cognac','Brandy','Cachaça','Pisco','Whisky irlandais','Absinthe'] },
+  { id:'liqueurs', label:'Liqueurs & Amers', icon:'🍶', items:['Cointreau','Triple sec','Amaretto','Baileys','Kahlúa','Campari','Aperol','Midori','Crème de cassis','Crème de menthe','Limoncello','St-Germain','Curaçao bleu','Curaçao orange','Maraschino','Chartreuse verte','Chartreuse jaune','Grand Marnier','Cherry Brandy','Bénédictine','Crème de cacao','Galliano','Frangelico','Chambord'] },
+  { id:'vins', label:'Champagne & Vins', icon:'🥂', items:['Champagne','Prosecco','Vin rouge','Vin blanc sec','Vermouth dry','Vermouth rosso','Porto rouge'] },
+  { id:'jus', label:'Jus & Purées', icon:'🍊', items:["Jus de citron","Jus de citron vert","Jus d'orange","Jus de cranberry","Jus d'ananas","Jus de pamplemousse","Purée de passion","Purée de pêche","Purée de mangue","Jus de tomate","Purée de fraise"] },
+  { id:'sodas', label:'Sodas & Tonics', icon:'🫧', items:['Coca-Cola','Eau gazeuse','Tonic water','Ginger beer','Ginger ale','Limonade','Schweppes agrumes'] },
+  { id:'sirops', label:'Sirops & Sucres', icon:'🍯', items:["Sirop de sucre de canne","Sirop de grenadine","Sirop d'orgeat","Sirop de fraise","Sirop de framboise","Sirop d'agave","Sirop de miel","Sucre en poudre","Miel","Angostura bitters","Peychaud's bitters"] },
+  { id:'laitiers', label:'Laitiers & Divers', icon:'🥛', items:["Crème fraîche","Lait de coco","Crème de coco","Blanc d'œuf","Café espresso"] },
+  { id:'herbes', label:'Herbes & Fruits frais', icon:'🌿', items:["Menthe fraîche","Basilic","Citron vert frais","Citron jaune frais","Orange fraîche","Fraise fraîche","Framboise","Concombre","Ananas frais","Pomme","Piment jalapeño","Romarin"] },
+  { id:'epices', label:'Épices & Condiments', icon:'🌶️', items:["Sel","Tabasco","Sauce Worcestershire","Raifort","Cannelle","Clous de girofle","Anis étoilé","Noix de muscade","Poivre noir"] },
+];
+
+const COCKTAILS = [
+  // === RHUM ===
+  {id:1,title:"Mojito",emoji:"🍹",cat:"Longdrinks",baseAlcool:"Rhum",diff:"facile",prep:5,glass:"Highball",portions:1,
+   ingredients:[["Rhum blanc",5,"cl"],["Jus de citron vert",2,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Menthe fraîche",8,"feuilles"],["Eau gazeuse",10,"cl"],["Citron vert frais",0.5,""]],
+   tags:["Rhum blanc","Jus de citron vert","Sirop de sucre de canne","Menthe fraîche","Eau gazeuse"],
+   steps:["Déposez la menthe, le jus de citron vert et le sirop dans le verre. Écrasez doucement au muddler sans déchirer les feuilles.","Remplissez le verre de glace pilée.","Versez le rhum blanc.","Complétez avec l'eau gazeuse et remuez délicatement.","Décorez d'un brin de menthe et d'une rondelle de citron vert."]},
+
+  {id:2,title:"Daiquiri",emoji:"🍸",cat:"Shortdrinks",baseAlcool:"Rhum",diff:"facile",prep:3,glass:"Coupe",portions:1,
+   ingredients:[["Rhum blanc",6,"cl"],["Jus de citron vert",2.5,"cl"],["Sirop de sucre de canne",1.5,"cl"]],
+   tags:["Rhum blanc","Jus de citron vert","Sirop de sucre de canne"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez vigoureusement 12–15 secondes.","Filtrez dans une coupe bien froide.","Décorez d'un zeste de citron vert."]},
+
+  {id:3,title:"Piña Colada",emoji:"🌴",cat:"Tiki & Exotiques",baseAlcool:"Rhum",diff:"facile",prep:5,glass:"Tiki mug",portions:1,
+   ingredients:[["Rhum blanc",5,"cl"],["Jus d'ananas",10,"cl"],["Crème de coco",5,"cl"]],
+   tags:["Rhum blanc","Jus d'ananas","Crème de coco"],
+   steps:["Mettez tous les ingrédients dans un blender avec 200 g de glace pilée.","Mixez jusqu'à obtenir une texture onctueuse.","Versez dans un grand verre ou tiki mug.","Décorez d'une tranche d'ananas et d'une cerise."]},
+
+  {id:4,title:"Cuba Libre",emoji:"🥤",cat:"Longdrinks",baseAlcool:"Rhum",diff:"facile",prep:2,glass:"Highball",portions:1,
+   ingredients:[["Rhum blanc",5,"cl"],["Coca-Cola",15,"cl"],["Jus de citron vert",1,"cl"],["Citron vert frais",0.5,""]],
+   tags:["Rhum blanc","Coca-Cola","Jus de citron vert","Citron vert frais"],
+   steps:["Remplissez un grand verre de glaçons.","Versez le rhum et le jus de citron vert.","Complétez avec le Coca-Cola bien frais.","Remuez légèrement, décorez d'une rondelle de citron vert."]},
+
+  {id:5,title:"Dark & Stormy",emoji:"⛈️",cat:"Longdrinks",baseAlcool:"Rhum",diff:"facile",prep:3,glass:"Highball",portions:1,
+   ingredients:[["Rhum ambré",6,"cl"],["Ginger beer",12,"cl"],["Jus de citron vert",1.5,"cl"],["Citron vert frais",0.5,""]],
+   tags:["Rhum ambré","Ginger beer","Jus de citron vert"],
+   steps:["Remplissez un highball de glaçons.","Versez le ginger beer.","Faites glisser délicatement le rhum sur le dessus.","Ajoutez le jus de citron vert, décorez d'une rondelle."]},
+
+  {id:6,title:"Mai Tai",emoji:"🌺",cat:"Tiki & Exotiques",baseAlcool:"Rhum",diff:"moyen",prep:5,glass:"Tiki mug",portions:1,
+   ingredients:[["Rhum ambré",4,"cl"],["Rhum blanc",2,"cl"],["Sirop d'orgeat",1.5,"cl"],["Cointreau",2,"cl"],["Jus de citron vert",3,"cl"],["Sirop de sucre de canne",0.5,"cl"]],
+   tags:["Rhum ambré","Rhum blanc","Sirop d'orgeat","Cointreau","Jus de citron vert"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez pendant 12 secondes.","Filtrez sur glace pilée dans le verre.","Décorez de menthe, d'une rondelle de citron vert et d'une cerise."]},
+
+  {id:7,title:"Zombie",emoji:"🧟",cat:"Tiki & Exotiques",baseAlcool:"Rhum",diff:"moyen",prep:7,glass:"Tiki mug",portions:1,
+   ingredients:[["Rhum blanc",4.5,"cl"],["Rhum ambré",4.5,"cl"],["Rhum brun",1.5,"cl"],["Jus d'ananas",4.5,"cl"],["Jus de citron vert",2,"cl"],["Sirop de grenadine",1.5,"cl"],["Sirop d'orgeat",0.5,"cl"]],
+   tags:["Rhum blanc","Rhum ambré","Rhum brun","Jus d'ananas","Jus de citron vert","Sirop de grenadine","Sirop d'orgeat"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Verser sur glace pilée dans un tiki mug.","Ce cocktail est très chargé — à déguster avec modération !","Décorer de menthe et d'une cerise."]},
+
+  {id:8,title:"Between the Sheets",emoji:"🌙",cat:"Shortdrinks",baseAlcool:"Rhum",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Rhum blanc",3,"cl"],["Cognac",3,"cl"],["Cointreau",3,"cl"],["Jus de citron",1.5,"cl"]],
+   tags:["Rhum blanc","Cognac","Cointreau","Jus de citron"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez vigoureusement.","Filtrez dans une coupe froide.","Décorez d'un zeste de citron."]},
+
+  {id:9,title:"Jungle Bird",emoji:"🦜",cat:"Shortdrinks",baseAlcool:"Rhum",diff:"moyen",prep:4,glass:"Rocks",portions:1,
+   ingredients:[["Rhum brun",4.5,"cl"],["Campari",2,"cl"],["Jus d'ananas",4.5,"cl"],["Jus de citron vert",1.5,"cl"],["Sirop de sucre de canne",1,"cl"]],
+   tags:["Rhum brun","Campari","Jus d'ananas","Jus de citron vert","Sirop de sucre de canne"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans un verre rocks sur un gros glaçon.","Décorez d'une tranche d'ananas et d'une cerise."]},
+
+  {id:10,title:"Painkiller",emoji:"🌊",cat:"Tiki & Exotiques",baseAlcool:"Rhum",diff:"facile",prep:4,glass:"Tiki mug",portions:1,
+   ingredients:[["Rhum brun",6,"cl"],["Jus d'ananas",12,"cl"],["Jus d'orange",3,"cl"],["Crème de coco",3,"cl"],["Noix de muscade",1,"pincée"]],
+   tags:["Rhum brun","Jus d'ananas","Jus d'orange","Crème de coco","Noix de muscade"],
+   steps:["Shaker les ingrédients (sauf la muscade) avec de la glace.","Verser sur glace dans un tiki mug.","Saupoudrer de noix de muscade fraîchement râpée."]},
+
+  {id:11,title:"Strawberry Daiquiri",emoji:"🍓",cat:"Frozen",baseAlcool:"Rhum",diff:"facile",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Rhum blanc",5,"cl"],["Jus de citron vert",2.5,"cl"],["Sirop de fraise",2,"cl"],["Fraise fraîche",6,"pièces"]],
+   tags:["Rhum blanc","Jus de citron vert","Sirop de fraise","Fraise fraîche","Purée de fraise"],
+   steps:["Mettez tous les ingrédients dans un blender avec 200 g de glace pilée.","Mixez jusqu'à texture lisse.","Versez dans une coupe.","Décorez d'une fraise fraîche sur le bord."]},
+
+  {id:12,title:"Hemingway Daiquiri",emoji:"📖",cat:"Shortdrinks",baseAlcool:"Rhum",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Rhum blanc",6,"cl"],["Maraschino",1.5,"cl"],["Jus de pamplemousse",3,"cl"],["Jus de citron vert",2,"cl"]],
+   tags:["Rhum blanc","Maraschino","Jus de pamplemousse","Jus de citron vert"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez vigoureusement 12 secondes.","Double-filtrez dans une coupe froide.","Décorez d'un zeste de citron vert — sans sucre ajouté."]},
+
+  {id:13,title:"Rum Old Fashioned",emoji:"🍂",cat:"Shortdrinks",baseAlcool:"Rhum",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+   ingredients:[["Rhum ambré",6,"cl"],["Sirop de sucre de canne",1,"cl"],["Angostura bitters",2,"traits"],["Orange fraîche",1,"zeste"]],
+   tags:["Rhum ambré","Sirop de sucre de canne","Angostura bitters"],
+   steps:["Versez sirop et bitters dans un verre rocks.","Ajoutez un gros glaçon.","Versez le rhum ambré.","Remuez 20 secondes. Pressez et déposez un zeste d'orange."]},
+
+  {id:14,title:"El Presidente",emoji:"🎩",cat:"Shortdrinks",baseAlcool:"Rhum",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Rhum blanc",4.5,"cl"],["Vermouth dry",2.25,"cl"],["Curaçao orange",1,"cl"],["Sirop de grenadine",0.5,"cl"]],
+   tags:["Rhum blanc","Vermouth dry","Curaçao orange","Sirop de grenadine"],
+   steps:["Mélangez tous les ingrédients dans un verre à mélange avec de la glace.","Remuez 30 secondes.","Filtrez dans une coupe froide.","Décorez d'un zeste d'orange."]},
+
+{id:91,title:"Mojito Fraise-Basilic",emoji:"🍓",cat:"Longdrinks",baseAlcool:"Rhum",diff:"facile",prep:5,glass:"Highball",portions:1,
+ ingredients:[["Rhum blanc",5,"cl"],["Jus de citron vert",2,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Fraise fraîche",4,"pièces"],["Menthe fraîche",6,"feuilles"],["Basilic frais",4,"feuilles"],["Eau gazeuse",10,"cl"]],
+ tags:["Rhum blanc","Jus de citron vert","Sirop de sucre de canne","Fraise fraîche","Menthe fraîche","Basilic frais","Eau gazeuse"],
+ steps:["Écrasez les fraises, le basilic et la menthe avec le jus de citron vert et le sirop dans un verre.","Remplissez le verre de glaçons.","Versez le rhum blanc.","Complétez avec l'eau gazeuse et mélangez délicatement.","Décorez avec une fraise et une feuille de basilic."]},
+{id:92,title:"Daiquiri Rhubarbe",emoji:"🌱",cat:"Shortdrinks",baseAlcool:"Rhum",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+ ingredients:[["Rhum blanc",6,"cl"],["Purée de rhubarbe",2,"cl"],["Jus de citron vert",2,"cl"],["Sirop de sucre de canne",1.5,"cl"]],
+ tags:["Rhum blanc","Purée de rhubarbe","Jus de citron vert","Sirop de sucre de canne"],
+ steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans une coupe froide.","Décorez d'une fine rondelle de citron vert."]},
+{id:93,title:"Punch Fleur de Sureau",emoji:"🌸",cat:"Bowls & Punchs",baseAlcool:"Rhum",diff:"facile",prep:10,glass:"Punch bowl",portions:6,
+ ingredients:[["Rhum blanc",20,"cl"],["Sirop de fleur de sureau",10,"cl"],["Jus de citron vert",8,"cl"],["Jus d'ananas",20,"cl"],["Eau gazeuse",30,"cl"],["Menthe fraîche",1,"bouquet"]],
+ tags:["Rhum blanc","Sirop de fleur de sureau","Jus de citron vert","Jus d'ananas","Eau gazeuse","Menthe fraîche"],
+ steps:["Mélangez tous les ingrédients sauf l'eau gazeuse dans un punch bowl.","Ajoutez beaucoup de glaçons.","Complétez avec l'eau gazeuse au moment de servir.","Décorez de menthe fraîche et de rondelles d'ananas."]},
+
+  // === VODKA ===
+  {id:15,title:"Cosmopolitan",emoji:"💗",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"facile",prep:4,glass:"Martini",portions:1,
+   ingredients:[["Vodka",4.5,"cl"],["Cointreau",1.5,"cl"],["Jus de citron vert",1.5,"cl"],["Jus de cranberry",3,"cl"]],
+   tags:["Vodka","Cointreau","Jus de citron vert","Jus de cranberry"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez vigoureusement.","Filtrez dans un verre à martini froid.","Décorez d'un zeste de citron vert flambé."]},
+
+  {id:16,title:"Moscow Mule",emoji:"🐎",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Mug en cuivre",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Ginger beer",12,"cl"],["Jus de citron vert",2,"cl"],["Citron vert frais",0.5,""]],
+   tags:["Vodka","Ginger beer","Jus de citron vert","Citron vert frais"],
+   steps:["Remplissez un mug en cuivre de glaçons.","Versez la vodka et le jus de citron vert.","Complétez avec le ginger beer.","Remuez doucement, décorez d'une rondelle de citron vert."]},
+
+  {id:17,title:"Bloody Mary",emoji:"🍅",cat:"Longdrinks",baseAlcool:"Vodka",diff:"moyen",prep:5,glass:"Highball",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Jus de tomate",10,"cl"],["Jus de citron",1.5,"cl"],["Sauce Worcestershire",2,"traits"],["Tabasco",3,"gouttes"],["Sel",1,"pincée"],["Raifort",0.5,"c.à.c"]],
+   tags:["Vodka","Jus de tomate","Jus de citron","Sauce Worcestershire","Tabasco","Raifort"],
+   steps:["Roulez le contenu entre deux verres (ne pas shaker) pour préserver la texture.","Versez dans un highball rempli de glaçons.","Ajustez les assaisonnements à votre goût.","Décorez d'une tige de céleri, citron et olives."]},
+
+  {id:18,title:"Screwdriver",emoji:"🔧",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:2,glass:"Highball",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Jus d'orange",15,"cl"],["Orange fraîche",1,"rondelle"]],
+   tags:["Vodka","Jus d'orange","Orange fraîche"],
+   steps:["Remplissez un highball de glaçons.","Versez la vodka puis le jus d'orange frais.","Remuez délicatement.","Décorez d'une rondelle d'orange."]},
+
+  {id:19,title:"Vodka Tonic",emoji:"🫧",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:2,glass:"Highball",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Tonic water",15,"cl"],["Citron jaune frais",2,"tranches"]],
+   tags:["Vodka","Tonic water","Citron jaune frais"],
+   steps:["Remplissez un highball de glaçons.","Versez la vodka.","Complétez avec le tonic en versant sur le dos d'une cuillère.","Décorez de tranches de citron."]},
+
+  {id:20,title:"Sex on the Beach",emoji:"🏖️",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Highball",portions:1,
+   ingredients:[["Vodka",4,"cl"],["Midori",2,"cl"],["Jus d'orange",8,"cl"],["Jus de cranberry",4,"cl"]],
+   tags:["Vodka","Midori","Jus d'orange","Jus de cranberry"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez brièvement.","Versez dans un highball rempli de glaçons.","Décorez d'une rondelle d'orange et d'une cerise."]},
+
+  {id:21,title:"Espresso Martini",emoji:"☕",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"moyen",prep:4,glass:"Martini",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Kahlúa",2.5,"cl"],["Café espresso",3,"cl"],["Sirop de sucre de canne",1,"cl"]],
+   tags:["Vodka","Kahlúa","Café espresso","Sirop de sucre de canne"],
+   steps:["Préparez un espresso fort, laissez refroidir légèrement.","Versez tous les ingrédients dans un shaker avec de la glace.","Secouez très vigoureusement pour créer la mousse.","Filtrez dans un verre à martini froid. Décorez de 3 grains de café."]},
+
+  {id:22,title:"White Russian",emoji:"🤍",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Rocks",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Kahlúa",2.5,"cl"],["Crème fraîche",3,"cl"]],
+   tags:["Vodka","Kahlúa","Crème fraîche"],
+   steps:["Versez vodka et Kahlúa dans un verre rocks sur glaçons.","Faites couler doucement la crème sur le dessus avec le dos d'une cuillère.","Ne pas remuer — l'effet bicolore est la signature !"]},
+
+  {id:23,title:"Black Russian",emoji:"🖤",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"facile",prep:2,glass:"Rocks",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Kahlúa",2.5,"cl"]],
+   tags:["Vodka","Kahlúa"],
+   steps:["Versez vodka et Kahlúa dans un verre rocks rempli de glaçons.","Remuez doucement.","Servez immédiatement."]},
+
+  {id:24,title:"Harvey Wallbanger",emoji:"🧡",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Highball",portions:1,
+   ingredients:[["Vodka",4,"cl"],["Jus d'orange",10,"cl"],["Galliano",1.5,"cl"]],
+   tags:["Vodka","Jus d'orange","Galliano"],
+   steps:["Remplissez un highball de glaçons.","Versez vodka puis jus d'orange.","Faites flotter le Galliano sur le dessus sans mélanger.","Décorez d'une rondelle d'orange."]},
+
+  {id:25,title:"Blue Lagoon",emoji:"💙",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Highball",portions:1,
+   ingredients:[["Vodka",4,"cl"],["Curaçao bleu",2,"cl"],["Limonade",12,"cl"],["Jus de citron",1,"cl"]],
+   tags:["Vodka","Curaçao bleu","Limonade","Jus de citron"],
+   steps:["Remplissez un highball de glaçons.","Versez vodka, curaçao et jus de citron.","Complétez avec la limonade.","Décorez d'une cerise et d'une rondelle de citron."]},
+
+  {id:26,title:"Caipiroska",emoji:"🌿",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Rocks",portions:1,
+   ingredients:[["Vodka",6,"cl"],["Citron vert frais",1,"entier"],["Sucre en poudre",2,"c.à.c"]],
+   tags:["Vodka","Citron vert frais","Sucre en poudre"],
+   steps:["Coupez le citron vert en quartiers, placez dans le verre.","Ajoutez le sucre et écrasez vigoureusement au muddler.","Remplissez de glace pilée.","Versez la vodka et mélangez bien."]},
+
+  {id:27,title:"Pornstar Martini",emoji:"✨",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"moyen",prep:5,glass:"Martini",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Purée de passion",5,"cl"],["St-Germain",2,"cl"],["Jus de citron",1,"cl"],["Prosecco",3,"cl"]],
+   tags:["Vodka","Purée de passion","St-Germain","Jus de citron","Prosecco"],
+   steps:["Shaker vodka, purée de passion, St-Germain et jus de citron avec de la glace.","Filtrer dans un verre à martini froid.","Servir avec un mini verre de prosecco à côté.","Décorer d'une demi-fève de vanille."]},
+
+  {id:28,title:"Vodka Martini",emoji:"🫒",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"moyen",prep:4,glass:"Martini",portions:1,
+   ingredients:[["Vodka",7,"cl"],["Vermouth dry",1.5,"cl"]],
+   tags:["Vodka","Vermouth dry"],
+   steps:["Verser vodka et vermouth dans un verre à mélange avec de la glace.","Remuer 30 secondes — ne pas shaker.","Filtrer dans un verre à martini glacé.","Garnir d'une olive ou d'un zeste de citron."]},
+
+  {id:29,title:"Kamikaze",emoji:"💥",cat:"Shots & Pousse-café",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Shot",portions:1,
+   ingredients:[["Vodka",3,"cl"],["Triple sec",1.5,"cl"],["Jus de citron vert",1.5,"cl"]],
+   tags:["Vodka","Triple sec","Jus de citron vert"],
+   steps:["Versez les ingrédients dans un shaker avec de la glace.","Secouez vigoureusement.","Filtrez dans un verre à shot."]},
+{id:94,title:"Vodka Spritz",emoji:"🍊",cat:"Apéritifs",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Ballon",portions:1,
+ ingredients:[["Vodka",5,"cl"],["Aperol",4,"cl"],["Tonic water",10,"cl"],["Orange fraîche",1,"rondelle"]],
+ tags:["Vodka","Aperol","Tonic water","Orange fraîche"],
+ steps:["Remplissez un verre ballon de glaçons.","Versez la vodka et l'Aperol.","Complétez avec le tonic.","Décorez d'une rondelle d'orange."]},
+{id:95,title:"Vodka Litchi-Gingembre",emoji:"🍈",cat:"Longdrinks",baseAlcool:"Vodka",diff:"moyen",prep:5,glass:"Highball",portions:1,
+ ingredients:[["Vodka",5,"cl"],["Purée de litchi",4,"cl"],["Jus de citron vert",1.5,"cl"],["Sirop de gingembre",1,"cl"],["Eau gazeuse",8,"cl"]],
+ tags:["Vodka","Purée de litchi","Jus de citron vert","Sirop de gingembre","Eau gazeuse"],
+ steps:["Shaker vodka, purée de litchi, jus de citron vert et sirop de gingembre avec de la glace.","Filtrez dans un highball rempli de glaçons.","Complétez avec l'eau gazeuse.","Décorez d'un litchi frais et d'une rondelle de citron vert."]},
+
+  // === GIN ===
+  {id:30,title:"Gin & Tonic",emoji:"🍋",cat:"Longdrinks",baseAlcool:"Gin",diff:"facile",prep:2,glass:"Copa (ballon)",portions:1,
+   ingredients:[["Gin",5,"cl"],["Tonic water",15,"cl"],["Citron jaune frais",2,"tranches"],["Romarin",1,"brin"]],
+   tags:["Gin","Tonic water","Citron jaune frais","Romarin"],
+   steps:["Remplissez un verre ballon de glaçons.","Versez le gin.","Complétez avec le tonic bien froid en versant sur le dos d'une cuillère.","Décorez de tranches de citron et d'un brin de romarin."]},
+
+  {id:31,title:"Negroni",emoji:"🟠",cat:"Shortdrinks",baseAlcool:"Gin",diff:"facile",prep:3,glass:"Rocks",portions:1,
+   ingredients:[["Gin",3,"cl"],["Campari",3,"cl"],["Vermouth rosso",3,"cl"],["Orange fraîche",1,"zeste"]],
+   tags:["Gin","Campari","Vermouth rosso"],
+   steps:["Versez les trois ingrédients dans un verre rocks avec de la glace.","Remuez pendant 20 secondes.","Décorez d'un zeste d'orange pressé sur le bord du verre."]},
+
+  {id:32,title:"Tom Collins",emoji:"🍃",cat:"Longdrinks",baseAlcool:"Gin",diff:"facile",prep:4,glass:"Collins",portions:1,
+   ingredients:[["Gin",5,"cl"],["Jus de citron",3,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Eau gazeuse",8,"cl"]],
+   tags:["Gin","Jus de citron","Sirop de sucre de canne","Eau gazeuse"],
+   steps:["Shaker gin, jus de citron et sirop avec de la glace.","Verser sur glace dans un verre collins.","Compléter avec l'eau gazeuse.","Décorer d'une rondelle de citron."]},
+
+  {id:33,title:"Martini Gin",emoji:"🍸",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:4,glass:"Martini",portions:1,
+   ingredients:[["Gin",6,"cl"],["Vermouth dry",1.5,"cl"]],
+   tags:["Gin","Vermouth dry"],
+   steps:["Versez gin et vermouth dans un verre à mélange avec de la glace.","Remuez 30 secondes.","Filtrez dans un verre à martini bien glacé.","Décorez d'une olive ou d'un zeste de citron."]},
+
+  {id:34,title:"Gimlet",emoji:"💚",cat:"Shortdrinks",baseAlcool:"Gin",diff:"facile",prep:3,glass:"Coupe",portions:1,
+   ingredients:[["Gin",6,"cl"],["Jus de citron vert",2.5,"cl"],["Sirop de sucre de canne",1.5,"cl"]],
+   tags:["Gin","Jus de citron vert","Sirop de sucre de canne"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Filtrer dans une coupe froide.","Décorer d'un zeste de citron vert."]},
+
+  {id:35,title:"French 75",emoji:"🥂",cat:"Fizz & Pétillants",baseAlcool:"Gin",diff:"moyen",prep:4,glass:"Flûte",portions:1,
+   ingredients:[["Gin",4,"cl"],["Jus de citron",2,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Champagne",10,"cl"]],
+   tags:["Gin","Jus de citron","Sirop de sucre de canne","Champagne"],
+   steps:["Shaker gin, jus de citron et sirop avec de la glace.","Verser dans une flûte à champagne.","Compléter avec le champagne bien frais.","Décorer d'un zeste de citron."]},
+
+  {id:36,title:"Singapore Sling",emoji:"🌸",cat:"Longdrinks",baseAlcool:"Gin",diff:"difficile",prep:8,glass:"Highball",portions:1,
+   ingredients:[["Gin",4,"cl"],["Cherry Brandy",1.5,"cl"],["Cointreau",1.5,"cl"],["Bénédictine",0.75,"cl"],["Jus d'ananas",12,"cl"],["Jus de citron",1.5,"cl"],["Sirop de grenadine",1,"cl"],["Angostura bitters",1,"trait"]],
+   tags:["Gin","Cherry Brandy","Cointreau","Bénédictine","Jus d'ananas","Jus de citron","Sirop de grenadine","Angostura bitters"],
+   steps:["Shaker tous les ingrédients sauf le jus d'ananas avec de la glace.","Verser sur glace dans un highball.","Compléter avec le jus d'ananas.","Décorer d'une cerise, ananas et rondelle d'orange."]},
+
+  {id:37,title:"Gin Basil Smash",emoji:"🌱",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+   ingredients:[["Gin",6,"cl"],["Jus de citron",3,"cl"],["Sirop de sucre de canne",2,"cl"],["Basilic",10,"feuilles"]],
+   tags:["Gin","Jus de citron","Sirop de sucre de canne","Basilic"],
+   steps:["Mettre le basilic dans le shaker et écraser très doucement.","Ajouter les autres ingrédients avec de la glace.","Shaker vigoureusement.","Double-filtrer dans un verre rocks sur un gros glaçon. Décorer de basilic frais."]},
+
+  {id:38,title:"Bee's Knees",emoji:"🐝",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Gin",6,"cl"],["Jus de citron",2.5,"cl"],["Sirop de miel",2,"cl"],["Miel",1,"c.à.s"]],
+   tags:["Gin","Jus de citron","Miel","Sirop de miel"],
+   steps:["Préparez le sirop de miel en diluant du miel dans de l'eau chaude (ratio 1:1).","Versez tous les ingrédients dans un shaker avec de la glace.","Secouez vigoureusement.","Filtrez dans une coupe froide. Décorez d'un zeste de citron."]},
+
+  {id:39,title:"Last Word",emoji:"🌟",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Gin",2.25,"cl"],["Maraschino",2.25,"cl"],["Chartreuse verte",2.25,"cl"],["Jus de citron vert",2.25,"cl"]],
+   tags:["Gin","Maraschino","Chartreuse verte","Jus de citron vert"],
+   steps:["Mesurer les 4 ingrédients en parts strictement égales.","Shaker avec de la glace.","Filtrer dans une coupe froide.","La couleur vert pâle est magnifique — pas de décoration nécessaire."]},
+
+  {id:40,title:"Aviation",emoji:"✈️",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Gin",6,"cl"],["Maraschino",1.5,"cl"],["Jus de citron",2,"cl"]],
+   tags:["Gin","Maraschino","Jus de citron"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez vigoureusement.","Filtrez dans une coupe froide.","Décorez d'une cerise au marasquin."]},
+
+  {id:41,title:"Clover Club",emoji:"🍀",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Gin",5,"cl"],["Jus de citron",2.5,"cl"],["Sirop de framboise",2,"cl"],["Blanc d'œuf",1,""]],
+   tags:["Gin","Jus de citron","Sirop de framboise","Blanc d'œuf"],
+   steps:["Dry shake : tous les ingrédients sans glace 10 secondes pour monter le blanc d'œuf.","Ajouter la glace et shaker à nouveau vigoureusement.","Filtrer dans une coupe froide.","La mousse doit être épaisse et crémeuse. Décorer de framboises."]},
+
+  {id:42,title:"Gin Fizz",emoji:"🫧",cat:"Fizz & Pétillants",baseAlcool:"Gin",diff:"facile",prep:4,glass:"Collins",portions:1,
+   ingredients:[["Gin",5,"cl"],["Jus de citron",3,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Eau gazeuse",8,"cl"]],
+   tags:["Gin","Jus de citron","Sirop de sucre de canne","Eau gazeuse"],
+   steps:["Shaker gin, jus de citron et sirop avec de la glace.","Verser dans un verre collins rempli de glaçons.","Compléter avec l'eau gazeuse.","Ne pas remuer après l'eau gazeuse."]},
+{id:96,title:"Gin Lavande",emoji:"💜",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Coupe",portions:1,
+ ingredients:[["Gin",6,"cl"],["Sirop de lavande",1.5,"cl"],["Jus de citron",2,"cl"],["Blanc d'œuf",1,""]],
+ tags:["Gin","Sirop de lavande","Jus de citron","Blanc d'œuf"],
+ steps:["Dry shake : tous les ingrédients sans glace pour monter le blanc d'œuf.","Ajouter la glace et shaker à nouveau.","Filtrer dans une coupe froide.","Décorer d'une branche de lavande fraîche."]},
+{id:97,title:"Gin Yuzu-Basilic",emoji:"🌿",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+ ingredients:[["Gin",6,"cl"],["Jus de yuzu",2.5,"cl"],["Sirop de sucre de canne",2,"cl"],["Basilic frais",6,"feuilles"]],
+ tags:["Gin","Jus de yuzu","Sirop de sucre de canne","Basilic frais"],
+ steps:["Écrasez légèrement le basilic dans le shaker.","Ajoutez les autres ingrédients et de la glace.","Shaker vigoureusement.","Filtrez dans un verre rocks sur un gros glaçon.","Décorez d'une feuille de basilic."]},
+
+  // === WHISKY ===
+  {id:43,title:"Old Fashioned",emoji:"🥃",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+   ingredients:[["Whisky bourbon",6,"cl"],["Sirop de sucre de canne",1,"cl"],["Angostura bitters",2,"traits"],["Orange fraîche",1,"zeste"]],
+   tags:["Whisky bourbon","Sirop de sucre de canne","Angostura bitters"],
+   steps:["Versez sirop et bitters dans un verre rocks.","Ajoutez un gros glaçon.","Versez le bourbon.","Remuez 20 secondes.","Pressez un zeste d'orange sur le verre et décorez-en le bord."]},
+
+  {id:44,title:"Whisky Sour",emoji:"🍋",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+   ingredients:[["Whisky bourbon",5,"cl"],["Jus de citron",2.5,"cl"],["Sirop de sucre de canne",2,"cl"],["Blanc d'œuf",1,""]],
+   tags:["Whisky bourbon","Jus de citron","Sirop de sucre de canne","Blanc d'œuf"],
+   steps:["Dry shake : tous les ingrédients sans glace 10 secondes.","Ajouter la glace et shaker à nouveau.","Filtrer dans un verre rocks sur glaçons.","Déposer quelques gouttes d'Angostura sur la mousse."]},
+
+  {id:45,title:"Manhattan",emoji:"🌃",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Whisky bourbon",5,"cl"],["Vermouth rosso",2.5,"cl"],["Angostura bitters",2,"traits"]],
+   tags:["Whisky bourbon","Vermouth rosso","Angostura bitters"],
+   steps:["Versez bourbon, vermouth et bitters dans un verre à mélange avec de la glace.","Remuez 30 secondes.","Filtrez dans une coupe froide.","Décorez d'une cerise au marasquin."]},
+
+  {id:46,title:"Boulevardier",emoji:"🎩",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:4,glass:"Rocks",portions:1,
+   ingredients:[["Whisky bourbon",4.5,"cl"],["Campari",3,"cl"],["Vermouth rosso",3,"cl"]],
+   tags:["Whisky bourbon","Campari","Vermouth rosso"],
+   steps:["Verser tous les ingrédients dans un verre rocks avec un gros glaçon.","Remuer 20 secondes.","Décorer d'un zeste d'orange. Le cousin alcoolisé du Negroni."]},
+
+  {id:47,title:"Mint Julep",emoji:"🌾",cat:"Longdrinks",baseAlcool:"Whisky",diff:"moyen",prep:5,glass:"Julep cup",portions:1,
+   ingredients:[["Whisky bourbon",6,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Menthe fraîche",10,"feuilles"]],
+   tags:["Whisky bourbon","Sirop de sucre de canne","Menthe fraîche"],
+   steps:["Déposer la menthe dans le verre et verser le sirop.","Écraser très délicatement pour libérer les huiles sans déchirer les feuilles.","Remplir de glace pilée.","Verser le bourbon et remuer jusqu'à ce que le givre apparaisse.","Garnir d'un gros bouquet de menthe."]},
+
+  {id:48,title:"Irish Coffee",emoji:"☘️",cat:"Chauds",baseAlcool:"Whisky",diff:"facile",prep:5,glass:"Verre à pied",portions:1,
+   ingredients:[["Whisky irlandais",4,"cl"],["Café espresso",10,"cl"],["Sucre en poudre",1,"c.à.c"],["Crème fraîche",3,"cl"]],
+   tags:["Whisky irlandais","Café espresso","Sucre en poudre","Crème fraîche"],
+   steps:["Préchauffez le verre avec de l'eau chaude, jetez l'eau.","Versez le café chaud avec le sucre et remuez.","Ajoutez le whisky irlandais.","Faites couler la crème froide sur le dos d'une cuillère.","Ne pas remuer — boire à travers la crème."]},
+
+  {id:49,title:"Hot Toddy",emoji:"🫖",cat:"Chauds",baseAlcool:"Whisky",diff:"facile",prep:5,glass:"Mug",portions:1,
+   ingredients:[["Scotch",5,"cl"],["Eau chaude",15,"cl"],["Miel",1,"c.à.s"],["Jus de citron",2,"cl"],["Cannelle",1,"bâton"],["Clous de girofle",3,"pièces"]],
+   tags:["Scotch","Miel","Jus de citron","Cannelle","Clous de girofle"],
+   steps:["Préchauffez le mug, jetez l'eau.","Mélangez miel et jus de citron dans le mug.","Ajoutez le scotch et l'eau chaude.","Remuez avec le bâton de cannelle.","Décorez d'une rondelle de citron et des clous de girofle."]},
+
+  {id:50,title:"Penicillin",emoji:"💊",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"difficile",prep:6,glass:"Rocks",portions:1,
+   ingredients:[["Scotch",5,"cl"],["Jus de citron",2.5,"cl"],["Sirop de miel",2.5,"cl"],["Miel",1,"c.à.s"]],
+   tags:["Scotch","Jus de citron","Miel","Sirop de miel"],
+   steps:["Shaker le scotch, jus de citron et sirop de miel avec de la glace.","Filtrer dans un verre rocks sur un gros glaçon.","Optionnel : poser un scotch tourbé en flotteur.","Décorer d'un morceau de gingembre confit."]},
+
+  {id:51,title:"Paper Plane",emoji:"🛩️",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Whisky bourbon",2.25,"cl"],["Aperol",2.25,"cl"],["Amaretto",2.25,"cl"],["Jus de citron",2.25,"cl"]],
+   tags:["Whisky bourbon","Aperol","Amaretto","Jus de citron"],
+   steps:["Mesurer les 4 ingrédients en parts strictement égales.","Shaker vigoureusement avec de la glace.","Filtrer dans une coupe froide.","Équilibre parfait : amer, sucré, acide, fort."]},
+
+  {id:52,title:"New York Sour",emoji:"🍷",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:6,glass:"Rocks",portions:1,
+   ingredients:[["Whisky bourbon",5,"cl"],["Jus de citron",2.5,"cl"],["Sirop de sucre de canne",2,"cl"],["Blanc d'œuf",1,""],["Vin rouge",1.5,"cl"]],
+   tags:["Whisky bourbon","Jus de citron","Sirop de sucre de canne","Blanc d'œuf","Vin rouge"],
+   steps:["Dry shake : tous les ingrédients sauf le vin rouge.","Ajouter la glace et shaker à nouveau.","Filtrer dans un verre rocks sur glaçons.","Faire couler le vin rouge sur le dos d'une cuillère. Le flotteur bordeaux est spectaculaire."]},
+
+  {id:53,title:"Sazerac",emoji:"🌿",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"difficile",prep:6,glass:"Rocks",portions:1,
+   ingredients:[["Whisky bourbon",6,"cl"],["Sirop de sucre de canne",1,"cl"],["Peychaud's bitters",2,"traits"],["Absinthe",1,"rinçage"]],
+   tags:["Whisky bourbon","Sirop de sucre de canne","Peychaud's bitters","Absinthe"],
+   steps:["Rincer un verre rocks avec l'absinthe, jeter l'excédent.","Mélanger bourbon, sirop et bitters avec glace dans un verre à mélange.","Remuer 30 secondes.","Filtrer dans le verre rincé sans glaçon.","Presser un zeste de citron par-dessus — ne pas le mettre dans le verre."]},
+{id:98,title:"Blood and Sand",emoji:"🍊",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+ ingredients:[["Scotch whisky",4,"cl"],["Jus d'orange",4,"cl"],["Vermouth rosso",2,"cl"],["Liqueur de cerise",1,"cl"]],
+ tags:["Scotch whisky","Jus d'orange","Vermouth rosso","Liqueur de cerise"],
+ steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans une coupe froide.","Décorez d'une cerise au marasquin."]},
+{id:99,title:"Matcha-Hai",emoji:"🍵",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+ ingredients:[["Whisky japonais",5,"cl"],["Sirop de matcha",2,"cl"],["Jus de citron",1.5,"cl"],["Eau gazeuse",5,"cl"]],
+ tags:["Whisky japonais","Sirop de matcha","Jus de citron","Eau gazeuse"],
+ steps:["Shaker whisky, sirop de matcha et jus de citron avec de la glace.","Filtrez dans un verre rocks sur glaçons.","Complétez avec l'eau gazeuse.","Décorez d'une pincée de matcha en poudre."]},
+
+  // === TEQUILA ===
+  {id:54,title:"Margarita",emoji:"🌵",cat:"Shortdrinks",baseAlcool:"Tequila",diff:"facile",prep:4,glass:"Rocks ou Coupe",portions:1,
+   ingredients:[["Tequila",5,"cl"],["Cointreau",2.5,"cl"],["Jus de citron vert",2.5,"cl"],["Sel",1,"bord"]],
+   tags:["Tequila","Cointreau","Jus de citron vert","Sel"],
+   steps:["Saler le bord d'un verre (optionnel mais traditionnel).","Shaker tous les ingrédients avec de la glace.","Servir sur glace ou filtrer dans une coupe.","Décorer d'une rondelle de citron vert."]},
+
+  {id:55,title:"Paloma",emoji:"🕊️",cat:"Longdrinks",baseAlcool:"Tequila",diff:"facile",prep:3,glass:"Highball",portions:1,
+   ingredients:[["Tequila",5,"cl"],["Jus de pamplemousse",10,"cl"],["Schweppes agrumes",5,"cl"],["Jus de citron vert",1,"cl"],["Sel",1,"pincée"]],
+   tags:["Tequila","Jus de pamplemousse","Schweppes agrumes","Jus de citron vert"],
+   steps:["Saler le bord d'un highball.","Remplir de glaçons.","Verser tequila, jus de citron vert et jus de pamplemousse.","Compléter avec le Schweppes agrumes.","Remuer doucement."]},
+
+  {id:56,title:"Tequila Sunrise",emoji:"🌅",cat:"Longdrinks",baseAlcool:"Tequila",diff:"facile",prep:3,glass:"Highball",portions:1,
+   ingredients:[["Tequila",5,"cl"],["Jus d'orange",12,"cl"],["Sirop de grenadine",2,"cl"]],
+   tags:["Tequila","Jus d'orange","Sirop de grenadine"],
+   steps:["Remplissez un highball de glaçons.","Versez la tequila et le jus d'orange.","Faites couler doucement le sirop de grenadine sur le côté — il doit se déposer au fond.","Ne pas mélanger — l'effet dégradé rouge-orange est l'âme du cocktail."]},
+
+  {id:57,title:"Tommy's Margarita",emoji:"🥑",cat:"Shortdrinks",baseAlcool:"Tequila",diff:"facile",prep:4,glass:"Rocks",portions:1,
+   ingredients:[["Tequila",6,"cl"],["Jus de citron vert",3,"cl"],["Sirop d'agave",2,"cl"]],
+   tags:["Tequila","Jus de citron vert","Sirop d'agave"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Filtrer dans un verre rocks sur glaçons.","Décorer d'une rondelle de citron vert. Version sans triple sec, plus pure."]},
+
+  {id:58,title:"Mezcal Negroni",emoji:"🔥",cat:"Shortdrinks",baseAlcool:"Tequila",diff:"moyen",prep:4,glass:"Rocks",portions:1,
+   ingredients:[["Mezcal",3,"cl"],["Campari",3,"cl"],["Vermouth rosso",3,"cl"]],
+   tags:["Mezcal","Campari","Vermouth rosso"],
+   steps:["Versez les trois ingrédients dans un verre rocks avec un gros glaçon.","Remuez 20 secondes.","Décorez d'un zeste d'orange. La touche fumée du mezcal réinvente le Negroni."]},
+
+  {id:59,title:"Spicy Margarita",emoji:"🌶️",cat:"Shortdrinks",baseAlcool:"Tequila",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+   ingredients:[["Tequila",5,"cl"],["Cointreau",2.5,"cl"],["Jus de citron vert",2.5,"cl"],["Piment jalapeño",3,"rondelles"],["Sel",1,"bord"]],
+   tags:["Tequila","Cointreau","Jus de citron vert","Piment jalapeño"],
+   steps:["Écraser les rondelles de jalapeño dans le shaker.","Ajouter tous les ingrédients et la glace.","Shaker vigoureusement, double-filtrer.","Servir sur glaçons dans un verre au bord salé."]},
+
+  {id:60,title:"Caipirinha",emoji:"🇧🇷",cat:"Shortdrinks",baseAlcool:"Autre",diff:"facile",prep:3,glass:"Rocks",portions:1,
+   ingredients:[["Cachaça",6,"cl"],["Citron vert frais",1,"entier"],["Sucre en poudre",2,"c.à.c"]],
+   tags:["Cachaça","Citron vert frais","Sucre en poudre"],
+   steps:["Coupez le citron vert en quartiers dans un verre rocks.","Ajoutez le sucre et écrasez vigoureusement.","Remplissez de glace pilée.","Versez la cachaça et mélangez bien. Le cocktail national du Brésil."]},
+{id:100,title:"Tequila Pamplemousse-Romarin",emoji:"🍊",cat:"Longdrinks",baseAlcool:"Tequila",diff:"facile",prep:4,glass:"Highball",portions:1,
+ ingredients:[["Tequila",5,"cl"],["Jus de pamplemousse",10,"cl"],["Sirop de romarin",1,"cl"],["Tonic water",5,"cl"],["Romarin frais",1,"brin"]],
+ tags:["Tequila","Jus de pamplemousse","Sirop de romarin","Tonic water","Romarin frais"],
+ steps:["Remplissez un highball de glaçons.","Versez la tequila, le jus de pamplemousse et le sirop de romarin.","Complétez avec le tonic.","Décorez d'un brin de romarin."]},
+
+  // === CHAMPAGNE / VIN ===
+  {id:61,title:"Kir Royal",emoji:"🥂",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:2,glass:"Flûte",portions:1,
+   ingredients:[["Champagne",15,"cl"],["Crème de cassis",1.5,"cl"]],
+   tags:["Champagne","Crème de cassis"],
+   steps:["Versez la crème de cassis dans une flûte bien froide.","Complétez avec le champagne en versant doucement.","Ne pas mélanger — l'effet ombré naturel est parfait.","Servez immédiatement."]},
+
+  {id:62,title:"Bellini",emoji:"🍑",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:3,glass:"Flûte",portions:1,
+   ingredients:[["Prosecco",10,"cl"],["Purée de pêche",5,"cl"]],
+   tags:["Prosecco","Purée de pêche"],
+   steps:["Versez la purée de pêche fraîche dans une flûte froide.","Complétez avec le prosecco.","Remuez très délicatement une fois pour homogénéiser.","Servez immédiatement."]},
+
+  {id:63,title:"Aperol Spritz",emoji:"🍊",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:2,glass:"Ballon",portions:1,
+   ingredients:[["Prosecco",9,"cl"],["Aperol",6,"cl"],["Eau gazeuse",3,"cl"],["Orange fraîche",1,"rondelle"]],
+   tags:["Prosecco","Aperol","Eau gazeuse","Orange fraîche"],
+   steps:["Remplissez un grand verre ballon de glaçons.","Versez le prosecco.","Ajoutez l'Aperol.","Complétez avec un trait d'eau gazeuse.","Décorez d'une rondelle d'orange."]},
+
+  {id:64,title:"Mimosa",emoji:"🌼",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:2,glass:"Flûte",portions:1,
+   ingredients:[["Champagne",10,"cl"],["Jus d'orange",5,"cl"]],
+   tags:["Champagne","Jus d'orange"],
+   steps:["Versez le jus d'orange frais dans une flûte froide.","Complétez avec le champagne bien frais.","Remuez très doucement.","Servez avec un brin de menthe ou une rondelle d'orange."]},
+
+  {id:65,title:"Sangria",emoji:"🍷",cat:"Bowls & Punchs",baseAlcool:"Vin",diff:"facile",prep:15,glass:"Pichet",portions:6,
+   ingredients:[["Vin rouge",75,"cl"],["Jus d'orange",20,"cl"],["Brandy",5,"cl"],["Limonade",20,"cl"],["Orange fraîche",1,""],["Citron jaune frais",1,""],["Pomme",1,""],["Sirop de sucre de canne",3,"cl"]],
+   tags:["Vin rouge","Jus d'orange","Brandy","Limonade","Orange fraîche","Pomme"],
+   steps:["Coupez les fruits en rondelles ou en cubes.","Mélangez le vin, le jus d'orange, le brandy et le sirop dans un pichet.","Ajoutez les fruits, laissez macérer 2h minimum au réfrigérateur.","Au moment de servir, complétez avec la limonade.","Servez sur glace dans des grands verres."]},
+{id:110,title:"Mimosa Cranberry",emoji:"🍒",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:2,glass:"Flûte",portions:1,
+ ingredients:[["Champagne",10,"cl"],["Jus de cranberry",5,"cl"]],
+ tags:["Champagne","Jus de cranberry"],
+ steps:["Versez le jus de cranberry dans une flûte froide.","Complétez avec le champagne.","Ne pas mélanger.","Décorez d'une cerise ou d'une framboise."]},
+{id:111,title:"Saveurs d'Antan",emoji:"🍑",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:3,glass:"Flûte",portions:1,
+ ingredients:[["Champagne",6,"cl"],["Sirop de fraise",1.5,"cl"],["Purée de pêche blanche",2,"cl"],["Falernum Golden",2,"cl"]],
+ tags:["Champagne","Sirop de fraise","Purée de pêche blanche","Falernum Golden"],
+ steps:["Mélangez tous les ingrédients sauf le champagne dans une flûte.","Complétez avec le champagne bien frais.","Décorez d'une tranche de pêche ou d'une fraise."]},
+{id:112,title:"Bellini Melon-Miel",emoji:"🍈",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:3,glass:"Flûte",portions:1,
+ ingredients:[["Champagne",10,"cl"],["Purée de melon",4,"cl"],["Miel",0.5,"cl"]],
+ tags:["Champagne","Purée de melon","Miel"],
+ steps:["Versez la purée de melon et le miel dans une flûte.","Complétez avec le champagne.","Mélangez délicatement.","Décorez d'une boule de melon."]},
+{id:119,title:"Champagne Cocktail",emoji:"🍒",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:3,glass:"Flûte",portions:1,
+ ingredients:[["Champagne",12,"cl"],["Cognac",1.5,"cl"],["Sirop de sucre de canne",1,"cl"],["Angostura bitters",2,"traits"],["Cerise au marasquin",1,""],["Citron frais",1,"zeste"]],
+ tags:["Champagne","Cognac","Sirop de sucre de canne","Angostura bitters"],
+ steps:["Versez le cognac, le sirop et les bitters dans une flûte.","Complétez avec le champagne bien frais.","Décorez d'une cerise et d'un zeste de citron."]},
+{id:120,title:"Black Velvet",emoji:"🖤",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:2,glass:"Flûte",portions:1,
+ ingredients:[["Champagne",10,"cl"],["Stout",10,"cl"]],
+ tags:["Champagne","Stout"],
+ steps:["Versez doucement la stout dans une flûte à moitié remplie de champagne.","Ne pas mélanger.","Servez immédiatement pour préserver les bulles."]},
+{id:121,title:"Kalimotxo",emoji:"🍷",cat:"Longdrinks",baseAlcool:"Vin",diff:"facile",prep:2,glass:"Highball",portions:1,
+ ingredients:[["Vin rouge",10,"cl"],["Coca-Cola",10,"cl"],["Citron frais",1,"rondelle"]],
+ tags:["Vin rouge","Coca-Cola","Citron frais"],
+ steps:["Remplissez un highball de glaçons.","Versez le vin rouge et le Coca-Cola.","Remuez légèrement.","Décorez d'une rondelle de citron."]},
+{id:122,title:"Tinto de Verano",emoji:"🍋",cat:"Longdrinks",baseAlcool:"Vin",diff:"facile",prep:2,glass:"Highball",portions:1,
+ ingredients:[["Vin rouge",10,"cl"],["Limonade",10,"cl"],["Citron frais",1,"rondelle"]],
+ tags:["Vin rouge","Limonade","Citron frais"],
+ steps:["Remplissez un highball de glaçons.","Versez le vin rouge et la limonade.","Remuez légèrement.","Décorez d'une rondelle de citron."]},
+
+  // === COGNAC / BRANDY ===
+  {id:66,title:"Sidecar",emoji:"🏍️",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+   ingredients:[["Cognac",5,"cl"],["Cointreau",2.5,"cl"],["Jus de citron",2,"cl"]],
+   tags:["Cognac","Cointreau","Jus de citron"],
+   steps:["Givrez le bord d'une coupe avec du sucre (optionnel).","Shaker tous les ingrédients avec de la glace.","Filtrez dans la coupe froide.","Décorez d'un zeste de citron."]},
+
+  {id:67,title:"Stinger",emoji:"🐝",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"facile",prep:3,glass:"Coupe",portions:1,
+   ingredients:[["Cognac",5,"cl"],["Crème de menthe",2.5,"cl"]],
+   tags:["Cognac","Crème de menthe"],
+   steps:["Shaker cognac et crème de menthe avec de la glace.","Filtrer dans une coupe froide.","Très élégant, très années 60."]},
+
+  {id:68,title:"French Connection",emoji:"🇫🇷",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"facile",prep:2,glass:"Rocks",portions:1,
+   ingredients:[["Cognac",4,"cl"],["Amaretto",2,"cl"]],
+   tags:["Cognac","Amaretto"],
+   steps:["Versez cognac et amaretto dans un verre rocks sur glaçons.","Remuez doucement.","Servez immédiatement. Deux icônes françaises et italiennes réunies."]},
+{id:104,title:"Japanese Cocktail",emoji:"🌸",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+ ingredients:[["Cognac",6,"cl"],["Orgeat",1.5,"cl"],["Jus de citron",1.5,"cl"],["Angostura bitters",2,"traits"]],
+ tags:["Cognac","Orgeat","Jus de citron","Angostura bitters"],
+ steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans une coupe froide.","Décorez d'un zeste de citron et d'une cerise."]},
+{id:105,title:"Brandy Crusta",emoji:"🍊",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"moyen",prep:5,glass:"Rocks",portions:1,
+ ingredients:[["Cognac",6,"cl"],["Curaçao",1.5,"cl"],["Jus de citron",2,"cl"],["Sirop de sucre de canne",1,"cl"],["Orange fraîche",1,"zeste"]],
+ tags:["Cognac","Curaçao","Jus de citron","Sirop de sucre de canne"],
+ steps:["Givrez le bord du verre avec du sucre.","Shaker tous les ingrédients avec de la glace.","Filtrez dans le verre préparé.","Décorez d'un gros zeste d'orange."]},
+{id:106,title:"Cognac Kiwi Spritz",emoji:"🥝",cat:"Apéritifs",baseAlcool:"Cognac",diff:"facile",prep:3,glass:"Ballon",portions:1,
+ ingredients:[["Cognac",5,"cl"],["Sirop de kiwi",2,"cl"],["Limonade artisanale",10,"cl"],["Kiwi frais",0.5,""],["Angostura bitters",1,"trait"]],
+ tags:["Cognac","Sirop de kiwi","Limonade artisanale","Kiwi frais"],
+ steps:["Remplissez un verre ballon de glaçons.","Versez le cognac et le sirop de kiwi.","Complétez avec la limonade.","Décorez d'une demi-tranche de kiwi et d'un trait de bitters."]},
+{id:115,title:"Brandy Alexander",emoji:"🍫",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"facile",prep:3,glass:"Coupe",portions:1,
+ ingredients:[["Cognac",4,"cl"],["Crème de cacao",4,"cl"],["Crème fraîche",4,"cl"],["Noix de muscade",1,"pincée"]],
+ tags:["Cognac","Crème de cacao","Crème fraîche","Noix de muscade"],
+ steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans une coupe froide.","Saupoudrez de noix de muscade.","Décorez d'un zeste de chocolat."]},
+{id:116,title:"Champs-Élysées",emoji:"🇫🇷",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"moyen",prep:4,glass:"Coupe",portions:1,
+ ingredients:[["Cognac",5,"cl"],["Chartreuse verte",1.5,"cl"],["Jus de citron",1.5,"cl"],["Sirop de sucre de canne",1,"cl"],["Angostura bitters",1,"trait"]],
+ tags:["Cognac","Chartreuse verte","Jus de citron","Sirop de sucre de canne"],
+ steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans une coupe froide.","Décorez d'un zeste de citron."]},
+
+  // === AMARETTO ===
+  {id:69,title:"Amaretto Sour",emoji:"🍒",cat:"Shortdrinks",baseAlcool:"Autre",diff:"moyen",prep:4,glass:"Rocks",portions:1,
+   ingredients:[["Amaretto",5,"cl"],["Jus de citron",2.5,"cl"],["Sirop de sucre de canne",1,"cl"],["Blanc d'œuf",1,""],["Angostura bitters",1,"trait"]],
+   tags:["Amaretto","Jus de citron","Sirop de sucre de canne","Blanc d'œuf","Angostura bitters"],
+   steps:["Dry shake : tous les ingrédients sans glace.","Ajouter la glace et shaker à nouveau.","Filtrer dans un verre rocks sur glaçons.","Déposer quelques gouttes d'Angostura sur la mousse."]},
+
+  {id:70,title:"Godfather",emoji:"🎻",cat:"Shortdrinks",baseAlcool:"Whisky",diff:"facile",prep:2,glass:"Rocks",portions:1,
+   ingredients:[["Scotch",4,"cl"],["Amaretto",2,"cl"]],
+   tags:["Scotch","Amaretto"],
+   steps:["Versez scotch et amaretto sur un gros glaçon dans un verre rocks.","Remuez doucement 10 secondes.","Savourez. Simple et remarquable."]},
+{id:107,title:"Amaretto Sunrise",emoji:"🌅",cat:"Longdrinks",baseAlcool:"Amaretto",diff:"facile",prep:3,glass:"Highball",portions:1,
+ ingredients:[["Amaretto",4,"cl"],["Jus d'orange",12,"cl"],["Sirop de grenadine",2,"cl"]],
+ tags:["Amaretto","Jus d'orange","Sirop de grenadine"],
+ steps:["Remplissez un highball de glaçons.","Versez l'amaretto puis le jus d'orange.","Faites couler doucement le sirop de grenadine sur le côté.","Décorez d'une rondelle d'orange."]},
+{id:108,title:"Amaretto Spritz Pamplemousse",emoji:"🍊",cat:"Apéritifs",baseAlcool:"Amaretto",diff:"facile",prep:3,glass:"Ballon",portions:1,
+ ingredients:[["Amaretto",4,"cl"],["Jus de pamplemousse",6,"cl"],["Prosecco",8,"cl"],["Amer",1,"trait"]],
+ tags:["Amaretto","Jus de pamplemousse","Prosecco"],
+ steps:["Remplissez un verre ballon de glaçons.","Versez l'amaretto et le jus de pamplemousse.","Complétez avec le prosecco.","Décorez d'une rondelle de pamplemousse."]},
+{id:109,title:"Tiramisu Martini",emoji:"☕",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"moyen",prep:5,glass:"Martini",portions:1,
+ ingredients:[["Amaretto",4,"cl"],["Liqueur de café",3,"cl"],["Crème fraîche",2,"cl"],["Cacao en poudre",1,"pincée"]],
+ tags:["Amaretto","Liqueur de café","Crème fraîche","Cacao en poudre"],
+ steps:["Shaker amaretto, liqueur de café et crème avec de la glace.","Filtrez dans un verre à martini froid.","Saupoudrez de cacao en poudre.","Décorez d'un grain de café."]},
+{id:117,title:"French Connection",emoji:"🎩",cat:"Shortdrinks",baseAlcool:"Cognac",diff:"facile",prep:2,glass:"Rocks",portions:1,
+ ingredients:[["Cognac",4,"cl"],["Amaretto",2,"cl"]],
+ tags:["Cognac","Amaretto"],
+ steps:["Versez cognac et amaretto dans un verre rocks sur un gros glaçon.","Remuez doucement.","Décorez d'un zeste d'orange."]},
+{id:118,title:"Almond Joy",emoji:"🍫",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"facile",prep:3,glass:"Rocks",portions:1,
+ ingredients:[["Amaretto",3,"cl"],["Crème de coco",3,"cl"],["Crème fraîche",3,"cl"],["Cacao en poudre",1,"pincée"]],
+ tags:["Amaretto","Crème de coco","Crème fraîche","Cacao en poudre"],
+ steps:["Shaker amaretto, crème de coco et crème fraîche avec de la glace.","Filtrez dans un verre rocks sur glaçons.","Saupoudrez de cacao en poudre.","Décorez d'une cerise."]},
+
+  // === ABSINTHE ===
+  {id:71,title:"Absinthe Drip",emoji:"💚",cat:"Apéritifs",baseAlcool:"Autre",diff:"facile",prep:5,glass:"Verre à absinthe",portions:1,
+   ingredients:[["Absinthe",3,"cl"],["Eau froide",9,"cl"],["Sucre en poudre",1,"morceau"]],
+   tags:["Absinthe","Sucre en poudre"],
+   steps:["Versez l'absinthe dans un verre à absinthe.","Placez une cuillère à absinthe perforée sur le verre.","Posez un morceau de sucre sur la cuillère.","Versez l'eau froide très lentement sur le sucre — observez la louche se former.","L'eau est parfaite quand le liquide devient opaque et perlé."]},
+{id:101,title:"Death in the Afternoon",emoji:"☠️",cat:"Apéritifs",baseAlcool:"Absinthe",diff:"facile",prep:2,glass:"Flûte",portions:1,
+ ingredients:[["Absinthe",3,"cl"],["Champagne",12,"cl"],["Sucre en poudre",1,"morceau"]],
+ tags:["Absinthe","Champagne","Sucre en poudre"],
+ steps:["Versez l'absinthe dans une flûte bien froide.","Ajoutez un morceau de sucre.","Complétez doucement avec le champagne bien frais.","Ne pas mélanger — l'effet de louche est recherché."]},
+{id:102,title:"Bob Marley Absinthe",emoji:"🌴",cat:"Longdrinks",baseAlcool:"Absinthe",diff:"facile",prep:3,glass:"Highball",portions:1,
+ ingredients:[["Absinthe",4,"cl"],["Jus d'orange",8,"cl"],["Jus de citron vert",2,"cl"],["Sirop de sucre de canne",1,"cl"],["Menthe fraîche",4,"feuilles"]],
+ tags:["Absinthe","Jus d'orange","Jus de citron vert","Sirop de sucre de canne","Menthe fraîche"],
+ steps:["Écrasez légèrement la menthe dans un verre.","Ajoutez les jus, le sirop et l'absinthe.","Remplissez de glaçons et mélangez.","Décorez d'une rondelle d'orange et d'une feuille de menthe."]},
+{id:103,title:"Absinthe Frappe",emoji:"❄️",cat:"Frozen",baseAlcool:"Absinthe",diff:"facile",prep:3,glass:"Coupe",portions:1,
+ ingredients:[["Absinthe",5,"cl"],["Eau",15,"cl"],["Sirop de sucre de canne",1,"cl"],["Glace pilée",200,"g"]],
+ tags:["Absinthe","Eau","Sirop de sucre de canne","Glace pilée"],
+ steps:["Mélangez l'absinthe, l'eau et le sirop dans un blender avec la glace pilée.","Mixez jusqu'à obtenir une texture lisse et onctueuse.","Versez dans une coupe froide.","Décorez d'une pincée de cannelle ou d'un zeste de citron."]},
+
+  // === BOWLS & PUNCHS ===
+  {id:72,title:"Punch Planteur",emoji:"🌴",cat:"Bowls & Punchs",baseAlcool:"Rhum",diff:"facile",prep:10,glass:"Punch bowl",portions:8,
+   ingredients:[["Rhum ambré",25,"cl"],["Jus d'orange",50,"cl"],["Jus d'ananas",30,"cl"],["Sirop de grenadine",10,"cl"],["Jus de citron vert",10,"cl"],["Noix de muscade",1,"pincée"]],
+   tags:["Rhum ambré","Jus d'orange","Jus d'ananas","Sirop de grenadine","Jus de citron vert"],
+   steps:["Mélangez tous les ingrédients dans un grand bol.","Ajoutez beaucoup de glace.","Saupoudrez de noix de muscate sur le dessus.","Décorez de rondelles d'orange, de citron vert et de cerises.","Servez dans des grands verres avec paille."]},
+
+  {id:73,title:"Punch des Iles",emoji:"🏝️",cat:"Bowls & Punchs",baseAlcool:"Rhum",diff:"facile",prep:10,glass:"Punch bowl",portions:10,
+   ingredients:[["Rhum blanc",30,"cl"],["Jus d'ananas",60,"cl"],["Purée de mangue",20,"cl"],["Jus de citron vert",15,"cl"],["Sirop de sucre de canne",10,"cl"],["Menthe fraîche",1,"bouquet"]],
+   tags:["Rhum blanc","Jus d'ananas","Purée de mangue","Jus de citron vert","Sirop de sucre de canne","Menthe fraîche"],
+   steps:["Mélangez tous les ingrédients liquides dans un punch bowl.","Ajoutez des glaçons en grande quantité.","Décorez de feuilles de menthe et de tranches de fruits exotiques.","Servez bien frais."]},
+
+  {id:74,title:"Moscow Mule Rosé",emoji:"🌹",cat:"Fizz & Pétillants",baseAlcool:"Vodka",diff:"facile",prep:4,glass:"Mug en cuivre",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Sirop de framboise",2,"cl"],["Jus de citron vert",2,"cl"],["Ginger beer",12,"cl"],["Framboise",5,"pièces"]],
+   tags:["Vodka","Sirop de framboise","Jus de citron vert","Ginger beer","Framboise"],
+   steps:["Remplissez un mug en cuivre de glaçons.","Versez vodka, sirop de framboise et jus de citron vert.","Complétez avec le ginger beer.","Décorez de framboises fraîches et d'un brin de menthe."]},
+
+  {id:75,title:"Hugo Spritz",emoji:"🌸",cat:"Apéritifs",baseAlcool:"Champagne",diff:"facile",prep:3,glass:"Ballon",portions:1,
+   ingredients:[["Prosecco",9,"cl"],["St-Germain",4,"cl"],["Eau gazeuse",3,"cl"],["Menthe fraîche",3,"feuilles"],["Citron jaune frais",1,"rondelle"]],
+   tags:["Prosecco","St-Germain","Eau gazeuse","Menthe fraîche"],
+   steps:["Remplissez un grand verre ballon de glaçons.","Versez le prosecco.","Ajoutez le St-Germain (liqueur de fleur de sureau).","Complétez avec l'eau gazeuse.","Décorez de menthe fraîche et d'une rondelle de citron."]},
+
+  {id:76,title:"Pisco Sour",emoji:"🐦",cat:"Shortdrinks",baseAlcool:"Autre",diff:"moyen",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Pisco",6,"cl"],["Jus de citron vert",3,"cl"],["Sirop de sucre de canne",2,"cl"],["Blanc d'œuf",1,""],["Angostura bitters",2,"gouttes"]],
+   tags:["Pisco","Jus de citron vert","Sirop de sucre de canne","Blanc d'œuf","Angostura bitters"],
+   steps:["Dry shake : tous les ingrédients sans glace pour monter le blanc d'œuf.","Ajouter la glace et shaker à nouveau vigoureusement.","Filtrer dans une coupe froide.","Déposer 2-3 gouttes d'Angostura sur la mousse. Cocktail national du Pérou et du Chili."]},
+
+  {id:77,title:"Sex on the Beach Rosé",emoji:"🌺",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Highball",portions:1,
+   ingredients:[["Vodka",4,"cl"],["Chambord",2,"cl"],["Jus d'ananas",8,"cl"],["Jus de cranberry",4,"cl"]],
+   tags:["Vodka","Chambord","Jus d'ananas","Jus de cranberry"],
+   steps:["Versez tous les ingrédients dans un shaker avec de la glace.","Secouez brièvement.","Versez dans un highball rempli de glaçons.","Décorez d'une rondelle d'ananas et d'une cerise."]},
+
+  {id:78,title:"Long Island Iced Tea",emoji:"🍵",cat:"Longdrinks",baseAlcool:"Vodka",diff:"moyen",prep:5,glass:"Highball",portions:1,
+   ingredients:[["Vodka",1.5,"cl"],["Rhum blanc",1.5,"cl"],["Gin",1.5,"cl"],["Tequila",1.5,"cl"],["Cointreau",1.5,"cl"],["Jus de citron",3,"cl"],["Sirop de sucre de canne",1,"cl"],["Coca-Cola",6,"cl"]],
+   tags:["Vodka","Rhum blanc","Gin","Tequila","Cointreau","Jus de citron","Coca-Cola"],
+   steps:["Shaker vodka, rhum, gin, tequila, cointreau, jus de citron et sirop avec de la glace.","Filtrer dans un highball rempli de glaçons.","Compléter avec un trait de Coca-Cola pour la couleur.","Décorer d'une rondelle de citron et d'une cerise.","Ce cocktail est très corsé malgré son aspect innocent !"]},
+
+  {id:79,title:"Pink Gin Fizz",emoji:"🌷",cat:"Fizz & Pétillants",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Collins",portions:1,
+   ingredients:[["Gin",5,"cl"],["Jus de citron",2.5,"cl"],["Sirop de framboise",2,"cl"],["Blanc d'œuf",1,""],["Eau gazeuse",6,"cl"]],
+   tags:["Gin","Jus de citron","Sirop de framboise","Blanc d'œuf","Eau gazeuse"],
+   steps:["Dry shake : gin, jus de citron, sirop et blanc d'œuf sans glace.","Ajouter la glace et shaker à nouveau.","Filtrer dans un verre collins sans glace.","Verser l'eau gazeuse lentement — la mousse va remonter majestueusement."]},
+
+  {id:80,title:"B-52",emoji:"✈️",cat:"Shots & Pousse-café",baseAlcool:"Autre",diff:"difficile",prep:5,glass:"Shot",portions:1,
+   ingredients:[["Kahlúa",1.5,"cl"],["Baileys",1.5,"cl"],["Cointreau",1.5,"cl"]],
+   tags:["Kahlúa","Baileys","Cointreau","Triple sec"],
+   steps:["Versez le Kahlúa dans un verre à shot.","Faites couler délicatement le Baileys sur le dos d'une cuillère à café — il doit flotter.","Faites de même avec le Cointreau sur le dessus.","Vous obtenez 3 couches distinctes — ne pas mélanger, caler d'un coup !"]},
+
+  {id:81,title:"Limoncello Spritz",emoji:"🍋",cat:"Apéritifs",baseAlcool:"Autre",diff:"facile",prep:3,glass:"Ballon",portions:1,
+   ingredients:[["Prosecco",9,"cl"],["Limoncello",4,"cl"],["Eau gazeuse",3,"cl"],["Citron jaune frais",2,"rondelles"]],
+   tags:["Prosecco","Limoncello","Eau gazeuse","Citron jaune frais"],
+   steps:["Remplissez un grand verre ballon de glaçons.","Versez le prosecco.","Ajoutez le limoncello.","Complétez avec un trait d'eau gazeuse.","Décorez de rondelles de citron frais."]},
+
+  {id:82,title:"Mango Margarita",emoji:"🥭",cat:"Frozen",baseAlcool:"Tequila",diff:"facile",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Tequila",5,"cl"],["Cointreau",2.5,"cl"],["Jus de citron vert",2,"cl"],["Purée de mangue",6,"cl"]],
+   tags:["Tequila","Cointreau","Jus de citron vert","Purée de mangue"],
+   steps:["Mettez tous les ingrédients dans un blender avec 200 g de glace pilée.","Mixez jusqu'à texture lisse.","Versez dans une coupe au bord salé.","Décorez d'une tranche de mangue fraîche."]},
+
+  {id:83,title:"Porn Star Martini (variante champagne)",emoji:"🌟",cat:"Shortdrinks",baseAlcool:"Vodka",diff:"moyen",prep:5,glass:"Martini",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Purée de passion",5,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Jus de citron vert",1,"cl"],["Champagne",3,"cl"]],
+   tags:["Vodka","Purée de passion","Sirop de sucre de canne","Jus de citron vert","Champagne"],
+   steps:["Shaker vodka, purée de passion, sirop et jus de citron avec de la glace.","Filtrer dans un verre à martini froid.","Servir avec une flûte de champagne à côté.","Boire une gorgée de cocktail, puis une de champagne — l'alternance est délicieuse."]},
+
+  {id:84,title:"Cucumber Gimlet",emoji:"🥒",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Gin",6,"cl"],["Jus de citron vert",2.5,"cl"],["Sirop de sucre de canne",2,"cl"],["Concombre",4,"rondelles"]],
+   tags:["Gin","Jus de citron vert","Sirop de sucre de canne","Concombre"],
+   steps:["Écraser les rondelles de concombre dans le shaker.","Ajouter gin, jus de citron vert et sirop.","Shaker avec de la glace, double-filtrer.","Décorer d'une fine rondelle de concombre."]},
+
+  {id:85,title:"Rum Punch Caraïbes",emoji:"🌴",cat:"Tiki & Exotiques",baseAlcool:"Rhum",diff:"facile",prep:5,glass:"Highball",portions:1,
+   ingredients:[["Rhum brun",5,"cl"],["Jus d'orange",6,"cl"],["Jus d'ananas",6,"cl"],["Sirop de grenadine",1.5,"cl"],["Jus de citron vert",1,"cl"],["Noix de muscade",1,"pincée"]],
+   tags:["Rhum brun","Jus d'orange","Jus d'ananas","Sirop de grenadine","Jus de citron vert"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Verser dans un highball rempli de glaçons.","Saupoudrer de noix de muscade.","Décorer d'une rondelle d'orange et d'une cerise."]},
+
+  {id:86,title:"Aperol Negroni",emoji:"🔴",cat:"Shortdrinks",baseAlcool:"Gin",diff:"facile",prep:3,glass:"Rocks",portions:1,
+   ingredients:[["Gin",3,"cl"],["Aperol",3,"cl"],["Vermouth rosso",3,"cl"]],
+   tags:["Gin","Aperol","Vermouth rosso"],
+   steps:["Versez les trois ingrédients dans un verre rocks avec un gros glaçon.","Remuez 20 secondes.","Décorez d'un zeste d'orange. Version plus légère et fruitée du Negroni classique."]},
+
+  {id:87,title:"White Lady",emoji:"👗",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Gin",4,"cl"],["Cointreau",2,"cl"],["Jus de citron",2,"cl"],["Blanc d'œuf",1,""]],
+   tags:["Gin","Cointreau","Jus de citron","Blanc d'œuf"],
+   steps:["Dry shake : tous les ingrédients sans glace 10 secondes.","Ajouter la glace et shaker à nouveau.","Filtrer dans une coupe froide.","Un classique des années 20 — élégant et soyeux."]},
+
+  {id:88,title:"Tequila Mule",emoji:"🌵",cat:"Longdrinks",baseAlcool:"Tequila",diff:"facile",prep:3,glass:"Mug en cuivre",portions:1,
+   ingredients:[["Tequila",5,"cl"],["Ginger beer",12,"cl"],["Jus de citron vert",2,"cl"],["Citron vert frais",0.5,""]],
+   tags:["Tequila","Ginger beer","Jus de citron vert","Citron vert frais"],
+   steps:["Remplissez un mug en cuivre de glaçons.","Versez la tequila et le jus de citron vert.","Complétez avec le ginger beer.","Décorez d'une rondelle de citron vert. La version mexicaine du Moscow Mule."]},
+
+  {id:89,title:"Baileys sur glace",emoji:"🍫",cat:"Shortdrinks",baseAlcool:"Autre",diff:"facile",prep:1,glass:"Rocks",portions:1,
+   ingredients:[["Baileys",8,"cl"]],
+   tags:["Baileys"],
+   steps:["Remplissez un verre rocks de glaçons.","Versez le Baileys.","Savourez. Parfois, la simplicité est la meilleure recette."]},
+
+  {id:90,title:"Porto Tonic",emoji:"🍇",cat:"Apéritifs",baseAlcool:"Vin",diff:"facile",prep:2,glass:"Copa (ballon)",portions:1,
+   ingredients:[["Porto rouge",6,"cl"],["Tonic water",12,"cl"],["Orange fraîche",2,"rondelles"],["Romarin",1,"brin"]],
+   tags:["Porto rouge","Tonic water","Orange fraîche","Romarin"],
+   steps:["Remplissez un verre ballon de glaçons.","Versez le porto rouge.","Complétez avec le tonic.","Décorez de rondelles d'orange et d'un brin de romarin."]},
+
+  // === AMARETTO ===
+  {id:123,title:"Madeleine",emoji:"🍍",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"facile",prep:3,glass:"Coupe",portions:1,
+   ingredients:[["Amaretto",3,"cl"],["Cointreau",2,"cl"],["Jus d'ananas",4,"cl"]],
+   tags:["Amaretto","Cointreau","Jus d'ananas"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans une coupe froide.","Décorez d'une tranche d'ananas ou d'une cerise."]},
+
+  {id:124,title:"Italian Mule",emoji:"🍋",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"facile",prep:3,glass:"Mug en cuivre",portions:1,
+   ingredients:[["Amaretto",4,"cl"],["Jus de citron vert",2,"cl"],["Ginger beer",12,"cl"],["Citron vert frais",0.5,""]],
+   tags:["Amaretto","Jus de citron vert","Ginger beer","Citron vert frais"],
+   steps:["Remplissez un mug en cuivre de glaçons.","Versez l'amaretto et le jus de citron vert.","Complétez avec le ginger beer.","Décorez d'une rondelle de citron vert."]},
+
+  {id:125,title:"Amaretto Espresso Martini",emoji:"☕",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"moyen",prep:4,glass:"Martini",portions:1,
+   ingredients:[["Amaretto",3,"cl"],["Vodka",3,"cl"],["Café espresso",3,"cl"],["Sirop de sucre de canne",1,"cl"]],
+   tags:["Amaretto","Vodka","Café espresso","Sirop de sucre de canne"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans un verre à martini froid.","Décorez de 3 grains de café."]},
+
+  {id:126,title:"Golden Dream",emoji:"🍊",cat:"Shortdrinks",baseAlcool:"Autre",diff:"facile",prep:3,glass:"Coupe",portions:1,
+   ingredients:[["Galliano",2,"cl"],["Cointreau",2,"cl"],["Jus d'orange",2,"cl"],["Crème fraîche",2,"cl"]],
+   tags:["Galliano","Cointreau","Jus d'orange","Crème fraîche"],
+   steps:["Shaker tous les ingrédients avec de la glace.","Filtrez dans une coupe froide.","Décorez d'un zeste d'orange."]},
+
+  {id:127,title:"Harvey Wallbanger (variante Amaretto)",emoji:"🍊",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"facile",prep:3,glass:"Rocks",portions:1,
+   ingredients:[["Amaretto",3,"cl"],["Jus d'orange",10,"cl"],["Galliano",1.5,"cl"]],
+   tags:["Amaretto","Jus d'orange","Galliano"],
+   steps:["Remplissez un verre rocks de glaçons.","Versez l'amaretto puis le jus d'orange.","Faites flotter le Galliano sur le dessus.","Décorez d'une rondelle d'orange."]},
+
+  {id:128,title:"Toasted Almond",emoji:"🌰",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"facile",prep:3,glass:"Rocks",portions:1,
+   ingredients:[["Amaretto",4,"cl"],["Crème fraîche",2,"cl"],["Kahlúa",2,"cl"]],
+   tags:["Amaretto","Crème fraîche","Kahlúa"],
+   steps:["Versez tous les ingrédients dans un verre rocks sur glaçons.","Remuez doucement.","Décorez d'une cerise ou d'une amande effilée."]},
+
+  {id:129,title:"Amaretto Flip",emoji:"🥚",cat:"Shortdrinks",baseAlcool:"Amaretto",diff:"moyen",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Amaretto",4,"cl"],["Cognac",2,"cl"],["Œuf entier",1,""],["Sirop de sucre de canne",1,"cl"]],
+   tags:["Amaretto","Cognac","Œuf entier","Sirop de sucre de canne"],
+   steps:["Dry shake : tous les ingrédients sans glace pour émulsionner l'œuf.","Ajouter la glace et shaker à nouveau.","Filtrer dans une coupe froide.","Saupoudrez de noix de muscade."]},
+
+  {id:130,title:"Midori Sour",emoji:"🍈",cat:"Shortdrinks",baseAlcool:"Autre",diff:"facile",prep:4,glass:"Rocks",portions:1,
+   ingredients:[["Midori",4,"cl"],["Jus de citron vert",2,"cl"],["Sirop de sucre de canne",1.5,"cl"],["Blanc d'œuf",1,""]],
+   tags:["Midori","Jus de citron vert","Sirop de sucre de canne","Blanc d'œuf"],
+   steps:["Dry shake : tous les ingrédients sans glace pour monter le blanc d'œuf.","Ajouter la glace et shaker à nouveau.","Filtrer dans un verre rocks sur glaçons.","Décorez d'une rondelle de citron vert."]},
+
+  // === GIN & VODKA ===
+  {id:131,title:"Pink Lady",emoji:"💖",cat:"Shortdrinks",baseAlcool:"Gin",diff:"moyen",prep:5,glass:"Coupe",portions:1,
+   ingredients:[["Gin",4,"cl"],["Jus de citron",2,"cl"],["Sirop de grenadine",1.5,"cl"],["Blanc d'œuf",1,""]],
+   tags:["Gin","Jus de citron","Sirop de grenadine","Blanc d'œuf"],
+   steps:["Dry shake : tous les ingrédients sans glace pour monter le blanc d'œuf.","Ajouter la glace et shaker à nouveau.","Filtrer dans une coupe froide.","Décorez d'une cerise."]},
+
+  {id:132,title:"Moscow Mule (variante framboise)",emoji:"🍓",cat:"Longdrinks",baseAlcool:"Vodka",diff:"facile",prep:3,glass:"Mug en cuivre",portions:1,
+   ingredients:[["Vodka",5,"cl"],["Jus de citron vert",2,"cl"],["Sirop de framboise",2,"cl"],["Ginger beer",12,"cl"],["Framboise fraîche",3,"pièces"]],
+   tags:["Vodka","Jus de citron vert","Sirop de framboise","Ginger beer","Framboise fraîche"],
+   steps:["Remplissez un mug en cuivre de glaçons.","Versez la vodka, le jus de citron vert et le sirop de framboise.","Complétez avec le ginger beer.","Décorez de framboises fraîches."]},
+];
+</script>
+</body>
+</html>
