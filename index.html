@@ -2,8 +2,27 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>MonCocktail — Le bar à la maison</title>
+
+  <!-- ── PWA : Manifest & thème ── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0C0F1D">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="MonCocktail">
+
+  <!-- ── PWA : Spécifique iOS (Safari "Ajouter à l'écran d'accueil") ── -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MonCocktail">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- ── SEO & partage ── -->
+  <meta name="description" content="130 recettes de cocktails — par ingrédients, catalogue, aléatoire">
+  <meta property="og:title" content="MonCocktail">
+  <meta property="og:description" content="Votre bar à la maison — 130 recettes de cocktails">
+  <meta property="og:type" content="website">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -180,7 +199,15 @@
     .notes-saved.show{opacity:1;}
     /* RESPONSIVE */
     @media(max-width:700px){.topbar{padding:0 12px;}.topbar-logo{font-size:16px;}.nav-btn{padding:4px 7px;font-size:12px;}.page{padding:18px 14px;}.hero{padding:24px 0 20px;}.families-grid{grid-template-columns:1fr 1fr;}.recipe-infos{flex-direction:column;}.info-block{border-right:none;border-bottom:1px solid var(--border);}.info-block:last-child{border-bottom:none;}}
-    /* Sous 480px : une seule colonne pour les familles d'ingrédients */
+    /* Gère l'encoche (notch) et la barre d'accueil iPhone X+ en mode standalone */
+    .topbar {
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right));
+      padding-top: env(safe-area-inset-top);
+    }
+    .page {
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
     @media(max-width:480px){
       .topbar{padding:0 10px;gap:6px;}
       .topbar-logo{font-size:17px;}
@@ -869,13 +896,20 @@ function updateQuantities(id) {
 
 // ── 16. INITIALISATION ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
-  // Active le bouton "retour en haut" dès que l'utilisateur défile
   window.addEventListener('scroll', function() {
     var st = document.getElementById('btn-scroll-top');
     if (st) st.classList.toggle('visible', window.scrollY > 80);
   });
-  // Initialise l'état History API pour que le premier popstate soit capturé correctement
   history.replaceState({ page: 'home' }, '', '');
+
+  // ── Enregistrement du Service Worker (PWA) ────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js')
+        .then(function(reg) { console.log('[PWA] SW enregistré :', reg.scope); })
+        .catch(function(err) { console.warn('[PWA] SW échoué (normal en file://) :', err); });
+    });
+  }
 });
 
 // ── 11. SILHOUETTES SVG DES VERRES ───────────────────────────────────────
