@@ -2,27 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MonCocktail — Le bar à la maison</title>
-
-  <!-- ── PWA : Manifest & thème ── -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0C0F1D">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="MonCocktail">
-
-  <!-- ── PWA : Spécifique iOS (Safari "Ajouter à l'écran d'accueil") ── -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="MonCocktail">
-  <link rel="apple-touch-icon" href="icon-192.png">
-
-  <!-- ── SEO & partage ── -->
-  <meta name="description" content="130 recettes de cocktails — par ingrédients, catalogue, aléatoire">
-  <meta property="og:title" content="MonCocktail">
-  <meta property="og:description" content="Votre bar à la maison — 130 recettes de cocktails">
-  <meta property="og:type" content="website">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -199,23 +180,16 @@
     .notes-saved.show{opacity:1;}
     /* RESPONSIVE */
     @media(max-width:700px){.topbar{padding:0 12px;}.topbar-logo{font-size:16px;}.nav-btn{padding:4px 7px;font-size:12px;}.page{padding:18px 14px;}.hero{padding:24px 0 20px;}.families-grid{grid-template-columns:1fr 1fr;}.recipe-infos{flex-direction:column;}.info-block{border-right:none;border-bottom:1px solid var(--border);}.info-block:last-child{border-bottom:none;}}
-    /* Sous 480px : logo réduit + libellés texte masqués, seuls les emojis restent */
+    /* Sous 480px : une seule colonne pour les familles d'ingrédients */
     @media(max-width:480px){
       .topbar{padding:0 10px;gap:6px;}
       .topbar-logo{font-size:17px;}
       .topbar-nav{gap:1px;}
       .nav-btn{padding:6px 9px;font-size:17px;}
       .nav-btn .nav-label{display:none;}
+      .families-grid{grid-template-columns:1fr;}
     }
-    /* Gère l'encoche (notch) et la barre d'accueil iPhone X+ en mode standalone */
-    .topbar {
-      padding-left: max(14px, env(safe-area-inset-left));
-      padding-right: max(14px, env(safe-area-inset-right));
-      padding-top: env(safe-area-inset-top);
-    }
-    .page {
-      padding-bottom: max(24px, env(safe-area-inset-bottom));
-    }
+    @media(max-width:400px){.families-grid{grid-template-columns:1fr;}}
 
     /* ── GLASS ICONS ───────────────────────────────────── */
     .glass-icon { color: var(--accent); display: inline-flex; align-items: center; justify-content: center; }
@@ -235,18 +209,10 @@
     .sm { font-size: 11px; color: var(--accent); line-height: 1; }
     .sm.off { color: var(--text3); opacity: .35; }
 
-    /* ── DIFF FILTER BAR ───────────────────────────────── */
-    .diff-filter-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-    .diff-chip { padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; color: var(--text2); white-space: nowrap; }
-    .diff-chip:hover { border-color: var(--text2); color: var(--text); }
-    .diff-chip.active-all { border-color: var(--accent); color: var(--accent); background: var(--surface2); }
-    .diff-chip.active-facile { border-color: var(--easy); color: var(--easy); background: #1a3527; }
-    .diff-chip.active-moyen { border-color: var(--medium); color: var(--medium); background: #332a14; }
-    .diff-chip.active-difficile { border-color: var(--hard); color: var(--hard); background: #331515; }
+    /* ── DIFF FILTER BAR — retiré ── */
 
     /* ── BOUTON LEXIQUE ────────────────────────────────── */
     .btn-lexique {
-      position: absolute; top: 0; right: 0;
       display: inline-flex; align-items: center; gap: 6px;
       padding: 8px 14px; border-radius: 10px;
       border: 1px solid var(--border); background: var(--surface);
@@ -320,7 +286,10 @@
 </div>
 
 <div id="page-search" class="page">
-  <button class="back-btn" onclick="navTo('home')">← Accueil</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <button class="back-btn" onclick="navTo('home')" style="margin:0;">← Accueil</button>
+    <button class="btn-lexique" onclick="openLexique()">💡 Lexique</button>
+  </div>
   <div class="section-title">Recherche par ingrédients</div>
   <p class="section-sub">Cochez vos ingrédients préférés pour trouver le cocktail idéal</p>
   <div class="families-grid" id="families-container"></div>
@@ -333,9 +302,12 @@
 </div>
 
 <div id="page-catalogue" class="page">
-  <button class="back-btn" onclick="navTo('home')">← Accueil</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <button class="back-btn" onclick="navTo('home')" style="margin:0;">← Accueil</button>
+    <button class="btn-lexique" onclick="openLexique()">💡 Lexique</button>
+  </div>
   <div class="section-title">Catalogue</div>
-  <p class="section-sub">Explorez toute la carte, filtrez par type, alcool ou difficulté</p>
+  <p class="section-sub">Explorez toute la carte, filtrez par type ou alcool de base</p>
   <div class="search-bar-wrap">
     <span class="search-bar-icon">🔍</span>
     <input class="search-bar-input" id="cat-search-input" type="text" placeholder="Rechercher un cocktail..." oninput="onCatSearch(this.value)" onkeydown="if(event.key==='Enter')execCatSearch()" autocomplete="off">
@@ -345,12 +317,6 @@
   <div class="cat-mode-bar">
     <button class="cat-mode-btn active" id="mode-btn-cat" onclick="setCatMode('cat')">🍸 Type</button>
     <button class="cat-mode-btn" id="mode-btn-base" onclick="setCatMode('base')">🥃 Alcool de base</button>
-  </div>
-  <div class="diff-filter-bar" id="diff-filter-bar">
-    <button class="diff-chip active-all" onclick="setDiffFilter('all',this)">Toutes</button>
-    <button class="diff-chip" onclick="setDiffFilter('facile',this)">🟢 Facile</button>
-    <button class="diff-chip" onclick="setDiffFilter('moyen',this)">🟡 Moyen</button>
-    <button class="diff-chip" onclick="setDiffFilter('difficile',this)">🔴 Difficile</button>
   </div>
   <div id="cat-tabs"></div>
   <div id="catalogue-results"></div>
@@ -367,16 +333,16 @@
 </div>
 
 <div id="page-recipe" class="page">
-  <div style="position:relative; min-height:34px; margin-bottom:4px; display:flex; align-items:center;">
-    <button class="back-btn" id="recipe-back-btn" onclick="goBack()" style="position:static; margin:0;">← Retour</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <button class="back-btn" id="recipe-back-btn" onclick="goBack()" style="margin:0;">← Retour</button>
     <button class="btn-lexique" onclick="openLexique()">💡 Lexique</button>
   </div>
   <div id="recipe-content"></div>
 </div>
 
 <div id="page-lexique" class="page">
-  <div style="position:relative; min-height:34px; margin-bottom:12px; display:flex; align-items:center;">
-    <button class="back-btn" onclick="goBack()" style="position:static; margin:0;">← Retour à la recette</button>
+  <div style="display:flex;align-items:center;margin-bottom:12px;">
+    <button class="back-btn" onclick="goBack()" style="margin:0;">← Retour</button>
   </div>
   <div class="section-title" style="margin-bottom:4px">Lexique</div>
   <p style="color:var(--text2);font-size:14px;margin-bottom:18px">Techniques, alcools, matériel — tout ce qu'il faut savoir.</p>
@@ -910,22 +876,6 @@ window.addEventListener('DOMContentLoaded', function() {
   });
   // Initialise l'état History API pour que le premier popstate soit capturé correctement
   history.replaceState({ page: 'home' }, '', '');
-
-  // ── Enregistrement du Service Worker (PWA) ────────────────────────────
-  // Le SW n'est disponible que sur HTTPS ou localhost.
-  // On vérifie la disponibilité avant de tenter l'enregistrement pour éviter
-  // toute erreur sur un contexte non sécurisé (ouverture locale file://).
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js')
-        .then(function(reg) {
-          console.log('[PWA] Service Worker enregistré :', reg.scope);
-        })
-        .catch(function(err) {
-          console.warn('[PWA] Enregistrement SW échoué (normal en file://) :', err);
-        });
-    });
-  }
 });
 
 // ── 11. SILHOUETTES SVG DES VERRES ───────────────────────────────────────
