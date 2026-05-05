@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="MonCocktail">
 
-  <!-- ── PWA : Spécifique iOS (Safari "Ajouter à l'écran d'accueil") ── -->
+  <!-- ── PWA : Spécifique iOS ── -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MonCocktail">
@@ -198,16 +198,11 @@
     .notes-saved{font-size:11px;color:var(--easy);margin-top:5px;opacity:0;transition:opacity .3s;}
     .notes-saved.show{opacity:1;}
     /* RESPONSIVE */
+    /* Encoche iPhone X+ en mode standalone */
+    .topbar{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));padding-top:env(safe-area-inset-top);}
+    .page{padding-bottom:max(24px,env(safe-area-inset-bottom));}
     @media(max-width:700px){.topbar{padding:0 12px;}.topbar-logo{font-size:16px;}.nav-btn{padding:4px 7px;font-size:12px;}.page{padding:18px 14px;}.hero{padding:24px 0 20px;}.families-grid{grid-template-columns:1fr 1fr;}.recipe-infos{flex-direction:column;}.info-block{border-right:none;border-bottom:1px solid var(--border);}.info-block:last-child{border-bottom:none;}}
-    /* Gère l'encoche (notch) et la barre d'accueil iPhone X+ en mode standalone */
-    .topbar {
-      padding-left: max(14px, env(safe-area-inset-left));
-      padding-right: max(14px, env(safe-area-inset-right));
-      padding-top: env(safe-area-inset-top);
-    }
-    .page {
-      padding-bottom: max(24px, env(safe-area-inset-bottom));
-    }
+    /* Sous 480px : une seule colonne pour les familles d'ingrédients */
     @media(max-width:480px){
       .topbar{padding:0 10px;gap:6px;}
       .topbar-logo{font-size:17px;}
@@ -285,6 +280,22 @@
     .lex-item.open .lex-item-body { max-height: 300px; padding-top: 10px; }
     .lex-empty { text-align: center; color: var(--text3); padding: 32px 0; font-size: 14px; }
     .lex-highlight { background: rgba(196,98,45,.22); border-radius: 3px; padding: 0 2px; }
+    /* ── FAB MISE À JOUR ──────────────────────────────── */
+    .fab-update {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(16px);
+      z-index: 300;
+      padding: 13px 24px; border-radius: 50px;
+      background: #4a7c59; color: white; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.30);
+      display: flex; align-items: center; gap: 8px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s, transform .3s;
+      white-space: nowrap;
+    }
+    .fab-update.visible { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+    .fab-update:hover { filter: brightness(1.12); }
+    @media(max-width:480px){ .fab-update{ font-size:13px; padding:11px 18px; bottom:70px; } }
   </style>
 </head>
 <body>
@@ -299,6 +310,7 @@
 </nav>
 <button class="fab-search" id="fab-search" onclick="doSearch()" disabled>🔍 Rechercher</button>
 <button class="btn-scroll-top" id="btn-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<button class="fab-update" id="fab-update" onclick="applyUpdate()">🔄 Mettre à jour</button>
 
 <div id="page-home" class="page active">
   <div class="hero">
@@ -896,21 +908,60 @@ function updateQuantities(id) {
 
 // ── 16. INITIALISATION ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
+  // Bouton retour en haut
   window.addEventListener('scroll', function() {
     var st = document.getElementById('btn-scroll-top');
     if (st) st.classList.toggle('visible', window.scrollY > 80);
   });
+  // Initialise l'état History API
   history.replaceState({ page: 'home' }, '', '');
 
-  // ── Enregistrement du Service Worker (PWA) ────────────────────────────
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js')
-        .then(function(reg) { console.log('[PWA] SW enregistré :', reg.scope); })
-        .catch(function(err) { console.warn('[PWA] SW échoué (normal en file://) :', err); });
+  // ── Service Worker + système de mise à jour ───────────────────────────
+  if ('serviceWorker' in navigator && !location.hostname.includes('claudeusercontent')) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(reg) {
+        console.log('[PWA] SW enregistré, scope :', reg.scope);
+
+        // Cas 1 : nouveau SW déjà en attente au chargement
+        if (reg.waiting) showUpdateFab();
+
+        // Cas 2 : nouveau SW installé pendant la session
+        reg.addEventListener('updatefound', function() {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', function() {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateFab();
+            }
+          });
+        });
+      })
+      .catch(function(err) { console.warn('[PWA] SW échoué :', err); });
+
+    // Cas 3 : message SW_WAITING (onglet ouvert avant l'install)
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'SW_WAITING') showUpdateFab();
+    });
+
+    // Rechargement automatique quand le nouveau SW prend le contrôle
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      window.location.reload();
     });
   }
 });
+
+// Affiche le bouton flottant de mise à jour
+function showUpdateFab() {
+  var fab = document.getElementById('fab-update');
+  if (fab) fab.classList.add('visible');
+}
+
+// Envoie SKIP_WAITING au SW en attente → déclenche le rechargement via controllerchange
+function applyUpdate() {
+  navigator.serviceWorker.getRegistration().then(function(reg) {
+    if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+  });
+}
 
 // ── 11. SILHOUETTES SVG DES VERRES ───────────────────────────────────────
 // 7 formes dessinées au trait (stroke), 100% inline, aucune dépendance externe.
