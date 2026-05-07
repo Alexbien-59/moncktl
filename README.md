@@ -1,6 +1,6 @@
 # 🍸 MonCocktail
 
-> **Votre bar à la maison** — 130 recettes de cocktails classiques et créatifs, accessibles partout, même sans connexion.
+> **Votre bar à la maison** — 130 recettes de cocktails classiques et créatifs, accessibles partout, même hors ligne.
 
 🔗 **[Ouvrir l'application](https://a-rech.github.io/moncktl/)**
 
@@ -8,9 +8,9 @@
 
 ## ✨ Fonctionnalités
 
-- 🔍 **Recherche par ingrédients** — sélectionnez ce que vous avez, l'app trouve les cocktails possibles
-- 📖 **Catalogue complet** — 130 recettes filtrables par type, alcool de base et difficulté
-- 🎲 **Cocktail aléatoire** — laissez le hasard choisir
+- 🔍 **Recherche par ingrédients** — sélectionnez vos ingrédients préférés, l'app trouve des cocktails possibles
+- 📖 **Catalogue complet** — 130 recettes filtrables par type ou alcool de base
+- 🎲 **Cocktail aléatoire** — laissez le hasard remplir votre verre
 - ❤️ **Favoris** — sauvegardez vos cocktails préférés
 - ⭐ **Notation** — notez chaque recette de 1 à 5 étoiles
 - 📝 **Notes personnelles** — ajoutez vos astuces et variantes sur chaque fiche
