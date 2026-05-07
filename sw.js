@@ -69,6 +69,13 @@ self.addEventListener('message', function(event) {
     // L'utilisateur a confirmé la mise à jour — on prend le contrôle
     console.log('[SW] skipWaiting() déclenché');
     self.skipWaiting();
+    return;
+  }
+
+  if (event.data && event.data.type === 'GET_VERSION') {
+    if (event.ports && event.ports[0]) {
+      event.ports[0].postMessage({ version: CACHE_VERSION });
+    }
   }
 });
 
