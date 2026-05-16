@@ -970,6 +970,50 @@
     </div>
   </div>
 
+  <!-- PROFIL GUSTATIF -->
+  <div class="form-section">
+    <div class="form-section-title">🎨 Profil gustatif</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:16px">Évaluez les caractéristiques de votre cocktail de 0 (aucune) à 5 (très intense).</p>
+    <div class="form-row" style="flex-direction:column;gap:16px">
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span class="form-label">🍬 Sucrosité</span>
+          <span style="font-size:13px;color:var(--accent);font-weight:500" id="sweet-label">Doux</span>
+        </div>
+        <input type="range" id="f-sweet" min="0" max="5" value="2" step="1"
+          oninput="updateProfileLabel('sweet',this.value)"
+          style="width:100%;accent-color:var(--accent)">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:2px">
+          <span>Sec</span><span>Très sucré</span>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span class="form-label">🌿 Amertume</span>
+          <span style="font-size:13px;color:var(--accent);font-weight:500" id="bitter-label">Légère</span>
+        </div>
+        <input type="range" id="f-bitter" min="0" max="5" value="1" step="1"
+          oninput="updateProfileLabel('bitter',this.value)"
+          style="width:100%;accent-color:var(--accent)">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:2px">
+          <span>Aucune</span><span>Très amer</span>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span class="form-label">🔥 Alcool</span>
+          <span style="font-size:13px;color:var(--accent);font-weight:500" id="alco-label">Standard</span>
+        </div>
+        <input type="range" id="f-alco" min="0" max="5" value="3" step="1"
+          oninput="updateProfileLabel('alco',this.value)"
+          style="width:100%;accent-color:var(--accent)">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:2px">
+          <span>Sans alcool</span><span>Très corsé</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="form-save-bar">
     <button class="btn btn-secondary" onclick="resetAddForm()">Réinitialiser</button>
     <button class="btn btn-primary" onclick="saveUserCocktail()">💾 Sauvegarder</button>
@@ -2284,22 +2328,34 @@ function cloneFromCocktail(id) {
 // ── Formulaire : remplir / vider ──────────────────────────────────────────
 
 function fillFormFromCocktail(c) {
-  document.getElementById('f-emoji').value   = c.emoji    || '🍸';
-  document.getElementById('f-title').value   = c.title    || '';
-  document.getElementById('f-cat').value     = c.cat      || '';
-  document.getElementById('f-base').value    = c.baseAlcool|| '';
-  document.getElementById('f-diff').value    = c.diff     || 'moyen';
-  document.getElementById('f-prep').value    = c.prep     || 5;
-  document.getElementById('f-portions').value= c.portions || 1;
-  document.getElementById('f-glass').value   = c.glass    || '';
+  document.getElementById('f-emoji').value    = c.emoji      || '🍸';
+  document.getElementById('f-title').value    = c.title      || '';
+  document.getElementById('f-cat').value      = c.cat        || '';
+  document.getElementById('f-base').value     = c.baseAlcool || '';
+  document.getElementById('f-diff').value     = c.diff       || 'moyen';
+  document.getElementById('f-prep').value     = c.prep       || 5;
+  document.getElementById('f-portions').value = c.portions   || 1;
+  document.getElementById('f-glass').value    = c.glass      || '';
+
+  // Profil gustatif : depuis l'objet profile ou depuis PROFILES global
+  var p = c.profile || PROFILES[c.id] || { s:2, b:1, a:3 };
+  document.getElementById('f-sweet').value  = p.s;
+  document.getElementById('f-bitter').value = p.b;
+  document.getElementById('f-alco').value   = p.a;
+  updateProfileLabel('sweet',  p.s);
+  updateProfileLabel('bitter', p.b);
+  updateProfileLabel('alco',   p.a);
+
   // Ingrédients
   document.getElementById('ing-list').innerHTML = '';
   (c.ingredients || []).forEach(function(ing) { addIngRow(ing[0], ing[1], ing[2]); });
   if (!c.ingredients || c.ingredients.length === 0) addIngRow();
+
   // Étapes
   document.getElementById('step-list').innerHTML = '';
   (c.steps || []).forEach(function(s) { addStepRow(s); });
   if (!c.steps || c.steps.length === 0) addStepRow();
+
   // Tags
   formTags = (c.tags || []).slice();
   renderTagChips();
@@ -2314,9 +2370,17 @@ function resetAddForm() {
   document.getElementById('f-prep').value     = '5';
   document.getElementById('f-portions').value = '1';
   document.getElementById('f-glass').value    = '';
+  document.getElementById('f-sweet').value    = '2';
+  document.getElementById('f-bitter').value   = '1';
+  document.getElementById('f-alco').value     = '3';
+  updateProfileLabel('sweet', 2);
+  updateProfileLabel('bitter', 1);
+  updateProfileLabel('alco', 3);
   document.getElementById('ing-list').innerHTML  = '';
   document.getElementById('step-list').innerHTML = '';
   document.getElementById('tag-input').value  = '';
+  var err = document.getElementById('form-error-msg');
+  if (err) err.remove();
   formTags = [];
   renderTagChips();
 }
@@ -2398,28 +2462,50 @@ function renderTagChips() {
   }).join('');
 }
 
+// ── Labels profil gustatif ────────────────────────────────────────────────
+var SWEET_LABELS = ['Sec','Très léger','Léger','Doux','Sucré','Très sucré'];
+var BITTER_LABELS = ['Aucune','Très légère','Légère','Notable','Amer','Très amer'];
+var ALCO_LABELS = ['Sans alcool','Très léger','Léger','Standard','Corsé','Très corsé'];
+
+function updateProfileLabel(type, val) {
+  var labels = type === 'sweet' ? SWEET_LABELS : type === 'bitter' ? BITTER_LABELS : ALCO_LABELS;
+  var el = document.getElementById(type + '-label');
+  if (el) el.textContent = labels[parseInt(val)] || '';
+}
+
 // ── Validation et sauvegarde ───────────────────────────────────────────────
-
 function saveUserCocktail() {
-  var title   = document.getElementById('f-title').value.trim();
-  var cat     = document.getElementById('f-cat').value;
-  var base    = document.getElementById('f-base').value;
-  var glass   = document.getElementById('f-glass').value;
+  var title = document.getElementById('f-title').value.trim();
+  var cat   = document.getElementById('f-cat').value;
+  var base  = document.getElementById('f-base').value;
+  var glass = document.getElementById('f-glass').value;
 
-  if (!title) { alert('Le nom du cocktail est obligatoire.'); return; }
-  if (!cat)   { alert('Choisissez une catégorie.'); return; }
-  if (!base)  { alert('Choisissez un alcool de base.'); return; }
-  if (!glass) { alert('Choisissez un verre.'); return; }
+  // Validations obligatoires
+  if (!title) { showFormError('Le nom du cocktail est obligatoire.'); return; }
+  if (!cat)   { showFormError('Choisissez une catégorie.'); return; }
+  if (!base)  { showFormError('Choisissez un alcool de base.'); return; }
+  if (!glass) { showFormError('Choisissez un verre.'); return; }
+
+  // Vérification doublon de nom (insensible à la casse)
+  var stored = lsGet(USER_COCKTAILS_KEY, []);
+  var titleLow = title.toLowerCase();
+  var duplicate = stored.filter(function(c) {
+    return c.title.toLowerCase() === titleLow && c.id !== editingId;
+  });
+  if (duplicate.length > 0) {
+    showFormError('Un cocktail s\'appelle déjà "' + duplicate[0].title + '". Choisissez un autre nom.');
+    return;
+  }
 
   // Collecter les ingrédients
   var ingredients = [];
   document.querySelectorAll('#ing-list .ing-row').forEach(function(row) {
     var name = row.querySelector('.ing-name').value.trim();
-    var qty  = parseFloat(row.querySelector('.ing-qty').value)  || 0;
+    var qty  = parseFloat(row.querySelector('.ing-qty').value) || 0;
     var unit = row.querySelector('.ing-unit').value.trim();
     if (name) ingredients.push([name, qty, unit]);
   });
-  if (ingredients.length === 0) { alert('Ajoutez au moins un ingrédient.'); return; }
+  if (ingredients.length === 0) { showFormError('Ajoutez au moins un ingrédient.'); return; }
 
   // Collecter les étapes
   var steps = [];
@@ -2427,39 +2513,62 @@ function saveUserCocktail() {
     var s = ta.value.trim();
     if (s) steps.push(s);
   });
-  if (steps.length === 0) { alert('Ajoutez au moins une étape.'); return; }
+  if (steps.length === 0) { showFormError('Ajoutez au moins une étape de préparation.'); return; }
+
+  // Profil gustatif (sliders)
+  var sweet  = parseInt(document.getElementById('f-sweet').value)  || 0;
+  var bitter = parseInt(document.getElementById('f-bitter').value) || 0;
+  var alco   = parseInt(document.getElementById('f-alco').value)   || 0;
 
   // Construire l'objet cocktail
-  var stored = lsGet(USER_COCKTAILS_KEY, []);
-  var id = editingId || (10000 + Date.now() % 1000000);
+  var id = editingId || (10000 + (Date.now() % 9000000));
   var cocktail = {
-    id:        id,
-    title:     title,
-    emoji:     document.getElementById('f-emoji').value.trim() || '🍸',
-    cat:       cat,
-    baseAlcool:base,
-    diff:      document.getElementById('f-diff').value,
-    prep:      parseInt(document.getElementById('f-prep').value)    || 5,
-    portions:  parseInt(document.getElementById('f-portions').value)|| 1,
-    glass:     glass,
+    id:          id,
+    title:       title,
+    emoji:       document.getElementById('f-emoji').value.trim() || '🍸',
+    cat:         cat,
+    baseAlcool:  base,
+    diff:        document.getElementById('f-diff').value,
+    prep:        parseInt(document.getElementById('f-prep').value)     || 5,
+    portions:    parseInt(document.getElementById('f-portions').value) || 1,
+    glass:       glass,
     ingredients: ingredients,
-    steps:     steps,
-    tags:      formTags.length ? formTags : ingredients.map(function(i) { return i[0]; }),
-    userCreated: true
+    steps:       steps,
+    tags:        formTags.length ? formTags : ingredients.map(function(i) { return i[0]; }),
+    userCreated: true,
+    profile:     { s: sweet, b: bitter, a: alco }
   };
 
-  // Remplacer si édition, sinon ajouter
+  // Sauvegarder
   if (editingId) {
     stored = stored.map(function(c) { return c.id === editingId ? cocktail : c; });
   } else {
     stored.push(cocktail);
   }
-  saveUserCocktailsList(stored);
-  loadUserCocktails(); // Recharger COCKTAILS avec la nouvelle recette
+  lsSet(USER_COCKTAILS_KEY, stored);
+  loadUserCocktails();
 
-  // Naviguer vers la fiche de la recette créée
-  navTo('catalogue');
-  setTimeout(function() { showRecipe(id); }, 100);
+  // Ajouter le profil dans PROFILES pour qu'il s'affiche dans la fiche
+  PROFILES[id] = { s: sweet, b: bitter, a: alco };
+
+  // Succès : afficher la fiche du cocktail créé
+  showFormError(''); // Effacer erreurs
+  editingId = null;
+  showRecipe(id);
+}
+
+// Affiche un message d'erreur inline (sans alert bloquant)
+function showFormError(msg) {
+  var bar = document.querySelector('.form-save-bar');
+  var existing = document.getElementById('form-error-msg');
+  if (existing) existing.remove();
+  if (!msg) return;
+  var div = document.createElement('div');
+  div.id = 'form-error-msg';
+  div.style.cssText = 'color:var(--hard);font-size:13px;padding:8px 12px;background:rgba(224,92,92,.12);border-radius:8px;margin-top:10px;width:100%;';
+  div.textContent = '⚠ ' + msg;
+  if (bar) bar.parentNode.insertBefore(div, bar);
+  div.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // ── Affichage "Mes créations" dans les fiches ──────────────────────────────
