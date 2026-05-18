@@ -2554,6 +2554,8 @@ function saveUserCocktail() {
   // Succès : afficher la fiche du cocktail créé
   showFormError(''); // Effacer erreurs
   editingId = null;
+  // Rembobiner la pile : on veut que le ← Retour depuis la fiche aille au catalogue
+  pageHistory = ['home', 'catalogue'];
   showRecipe(id);
 }
 
