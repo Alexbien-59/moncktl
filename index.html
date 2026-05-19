@@ -1021,7 +1021,7 @@
   </div>
 
   <div class="form-save-bar">
-    <button class="btn btn-secondary" onclick="resetAddForm()">Réinitialiser</button>
+    <button class="btn btn-secondary" onclick="if(confirm('Êtes-vous sûr ? Cela réinitialisera tout le formulaire.')) resetAddForm()">Réinitialiser</button>
     <button class="btn btn-primary" onclick="saveUserCocktail()">💾 Sauvegarder</button>
   </div>
 </div>
@@ -1436,9 +1436,10 @@ function renderCatalogueGrid(cocktails) {
   list.forEach(function(c) {
     var stars = miniStarsHtml(c.id); // Mini étoiles si noté (vide sinon)
     var gico = '<span class="glass-card" title="' + c.glass + '">' + glassIcon(c.glass, 20, 28) + '</span>';
+    var userBadge = c.userCreated ? '<span class="user-badge" title="Votre création">✦ Votre création</span>' : '';
     html += '<div class="recipe-card" onclick="showRecipe(' + c.id + ')">'
       + '<div class="recipe-card-img">' + c.emoji + heartBtn(c.id) + '</div>'
-      + '<div class="recipe-card-body"><div class="recipe-card-title">' + c.title + '</div>'
+      + '<div class="recipe-card-body"><div class="recipe-card-title">' + c.title + userBadge + '</div>'
       + '<div class="recipe-card-meta"><span>🕒 ' + c.prep + ' min</span><span>🥃 ' + c.baseAlcool + '</span>' + gico + (stars ? stars : '') + '</div>'
       + '<div class="recipe-card-tags"><span class="tag diff-' + c.diff + '">' + c.diff + '</span><span class="tag">' + c.cat + '</span></div>'
       + '</div></div>';
@@ -1543,17 +1544,17 @@ function showRecipe(id) {
 
   var html = '<div class="recipe-header">'
     + '<div class="recipe-hero-img">' + c.emoji + '</div>'
-    + '<div class="recipe-title-row">'
-    + '<h1 class="recipe-big-title">' + c.title + '</h1>'
-    + '<div class="recipe-badges">'
+    + '<h1 class="recipe-big-title" style="width:100%;margin:16px 0 8px 0;padding:0">' + c.title + '</h1>'
+    + '<div class="recipe-badges" style="width:100%;margin-bottom:16px">'
     + '<span class="tag diff-' + c.diff + '">' + c.diff + '</span>'
     + '<span class="tag">' + c.cat + '</span>'
     + '<span class="tag">🥃 ' + c.baseAlcool + '</span>'
-    + '</div></div>'
+    + '</div>'
     + '<button id="recipe-like-btn" class="recipe-like-btn' + (faved ? ' liked' : '') + '" data-id="' + id + '" onclick="onLikeCard(event,' + id + ')">'
     + '<span class="rl-ico">' + (faved ? '❤️' : '🤍') + '</span>'
     + '<span class="rl-txt">' + (faved ? 'Retirer des favoris' : 'Ajouter aux favoris') + '</span>'
     + '</button>'
+    + userCreatedBadgeHeader(id)
     + '<div class="recipe-infos">'
     + '<div class="info-block"><div class="info-label">PRÉPARATION</div><div class="info-val">' + c.prep + ' min</div></div>'
     + '<div class="info-block"><div class="info-label">VERRE</div><div class="info-val">' + glassSvg + '</div></div>'
@@ -2347,9 +2348,10 @@ function renderCloneResults(list) {
     return;
   }
   container.innerHTML = list.slice(0, 20).map(function(c) {
+    var userBadge = c.userCreated ? ' <span style="font-size:10px;color:var(--accent)">✦ Votre création</span>' : '';
     return '<div class="clone-result-item" onclick="cloneFromCocktail(' + c.id + ')">'
       + '<span class="clone-result-emoji">' + c.emoji + '</span>'
-      + '<div><div class="clone-result-title">' + c.title + '</div>'
+      + '<div><div class="clone-result-title">' + c.title + userBadge + '</div>'
       + '<div class="clone-result-meta">' + c.baseAlcool + ' · ' + c.cat + ' · ' + c.diff + '</div>'
       + '</div></div>';
   }).join('');
@@ -2638,15 +2640,27 @@ function showFormError(msg) {
 
 // ── Affichage "Mes créations" dans les fiches ──────────────────────────────
 
-// Ajoute un badge + bouton supprimer sur les fiches de recettes créées
-function userCreatedBadge(id) {
+// Badge "Ma création" pour afficher à côté du cœur dans le header
+function userCreatedBadgeHeader(id) {
   var stored = lsGet(USER_COCKTAILS_KEY, []);
   var isUser = stored.some(function(c) { return c.id === id; });
   if (!isUser) return '';
-  return '<div style="margin-top:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
-    + '<span class="user-recipe-badge">✦ Ma création</span>'
-    + '<button class="back-btn" style="margin:0;font-size:13px;padding:6px 12px;color:var(--hard);border-color:var(--hard)" onclick="deleteUserCocktail(' + id + ')">🗑 Supprimer</button>'
+  return '<span class="user-recipe-badge" style="margin-left:12px;padding:6px 12px;background:var(--accent);color:#0C0F1D;border-radius:6px;font-size:12px;font-weight:500;">◆ Ma création</span>';
+}
+
+// Bouton supprimer pour les recettes créées (affichage en bas de fiche)
+function userCreatedBadgeBottom(id) {
+  var stored = lsGet(USER_COCKTAILS_KEY, []);
+  var isUser = stored.some(function(c) { return c.id === id; });
+  if (!isUser) return '';
+  return '<div style="margin-top:20px;">'
+    + '<button class="back-btn" style="margin:0;font-size:13px;padding:8px 16px;color:var(--hard);border-color:var(--hard)" onclick="deleteUserCocktail(' + id + ')">🗑 Supprimer cette recette</button>'
     + '</div>';
+}
+
+// Compatibilité rétroactive (ancien nom)
+function userCreatedBadge(id) {
+  return userCreatedBadgeBottom(id);
 }
 
 function buildAdaptButton(id) {
